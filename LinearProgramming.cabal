@@ -1,0 +1,45 @@
+name:                 LinearProgramming
+version:              0.1.0.0
+synopsis:             Super cool solver for Linear Programming problems
+description:          This program solves LP problems using the simplex method
+license:              OtherLicense
+license-file:         cddl.txt
+author:               Claudio Mattera
+maintainer:           claudio@mattera.it
+homepage:             http://bitbucket.org/claudio/linear-programming
+copyright:            (c) 2013-2014 Claudio Mattera
+category:             Math
+build-type:           Simple
+cabal-version:        >=1.8
+extra-source-files:   README.md
+
+library
+  exposed-modules:    LinearProgramming.Tableau
+                    , LinearProgramming.Matrix
+  hs-source-dirs:     .
+  build-depends:      base ==4.*
+                    , base-unicode-symbols
+                    , bed-and-breakfast
+
+
+executable hSimplex
+    hs-source-dirs:   hSimplex
+    main-is:          Main.lhs
+    build-depends:    base == 4.*
+                    , base-unicode-symbols
+                    , LinearProgramming
+                    , bed-and-breakfast
+
+Test-Suite Tests
+    hs-source-dirs:   Tests
+    type:             exitcode-stdio-1.0
+    main-is:          Tests.hs
+    build-depends:    base == 4.*
+                    , base-unicode-symbols
+                    , LinearProgramming
+                    , QuickCheck
+                    , bed-and-breakfast
+
+source-repository head
+  type:               mercurial
+  location:           http://bitbucket.org/claudio/linear-programming
