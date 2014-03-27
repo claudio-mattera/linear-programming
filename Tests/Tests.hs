@@ -2,18 +2,17 @@
 
 module Main where
 
-import System.Exit (exitSuccess, exitFailure)
+import Test.Tasty
+import Test.Tasty.QuickCheck as QC
+import Test.Tasty.HUnit
 
-import Test.QuickCheck
-import Test.QuickCheck.Test (isSuccess)
-
-import TestMatrix
+import qualified TestsTableau
 
 main ∷ IO ()
-main = do
-  let tests = [ TestMatrix.test
-              ]
-  outcomes ← sequence tests
-  if and outcomes
-    then exitSuccess
-    else exitFailure
+main =
+  defaultMain tests
+
+tests ∷ TestTree
+tests = testGroup "Unit tests"
+  [ TestsTableau.tests
+  ]

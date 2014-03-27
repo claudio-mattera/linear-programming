@@ -15,11 +15,10 @@ extra-source-files:   README.md
 
 library
   exposed-modules:    LinearProgramming.Tableau
-                    , LinearProgramming.Matrix
   hs-source-dirs:     .
-  build-depends:      base ==4.*
+  build-depends:      base == 4.*
                     , base-unicode-symbols
-                    , bed-and-breakfast
+                    , matrix
 
 
 executable hSimplex
@@ -28,7 +27,7 @@ executable hSimplex
     build-depends:    base == 4.*
                     , base-unicode-symbols
                     , LinearProgramming
-                    , bed-and-breakfast
+                    , matrix
 
 Test-Suite Tests
     hs-source-dirs:   Tests
@@ -38,7 +37,10 @@ Test-Suite Tests
                     , base-unicode-symbols
                     , LinearProgramming
                     , QuickCheck
-                    , bed-and-breakfast
+                    , matrix
+                    , tasty
+                    , tasty-hunit
+                    , tasty-quickcheck
 
 source-repository head
   type:               mercurial
