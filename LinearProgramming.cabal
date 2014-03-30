@@ -19,6 +19,7 @@ library
   build-depends:      base == 4.*
                     , base-unicode-symbols
                     , matrix
+                    , vector
 
 
 executable hSimplex
@@ -28,6 +29,7 @@ executable hSimplex
                     , base-unicode-symbols
                     , LinearProgramming
                     , matrix
+                    , vector
 
 Test-Suite Tests
     hs-source-dirs:   Tests
@@ -38,6 +40,7 @@ Test-Suite Tests
                     , LinearProgramming
                     , QuickCheck
                     , matrix
+                    , vector
                     , tasty
                     , tasty-hunit
                     , tasty-quickcheck
