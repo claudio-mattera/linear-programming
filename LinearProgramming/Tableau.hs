@@ -1,14 +1,29 @@
 {-# LANGUAGE UnicodeSyntax #-}
 
-module LinearProgramming.Tableau where
+module LinearProgramming.Tableau (
+    Variable
+  , Value
+  , Tableau(..)
+  , pivot
+  , isFeasible
+  , isFinal
+  , chooseEnteringVariable
+  , chooseLeavingVariable
+  ) where
 
 import Prelude hiding (all, any, zipWith3, zip)
 import Prelude.Unicode
 import Data.Matrix as M
 import Data.Vector as V
-import Data.Foldable
 import Data.Maybe (isJust)
 import Data.Function (on)
+
+import Debug.HTrace
+
+{-
+NOTE: Data.Matrix indices range from (1,1) to (n,m), while Data.Vector indices
+range from 0 to n-1.
+-}
 
 type Variable = Int
 type Value = ℚ
@@ -52,12 +67,12 @@ pivot t@(Tableau {
   , tabBasicVariables = basicVariables
   , tabIndependantVariables = independantVariables
   }) entering leaving =
-      let Just i = V.elemIndex entering independantVariables >>= Just ∘ (+1)
-          Just j = V.elemIndex leaving basicVariables >>= Just ∘ (+1)
-          z' = z - (c V.! i) ⋅ (b V.! j) ÷ (a M.! (j, i))
-          a' = undefined
-          b' =
-          c' = undefined
+      let Just i = V.elemIndex entering independantVariables
+          Just j = V.elemIndex leaving basicVariables
+          z' = z - (c V.! i) ⋅ (b V.! j) ÷ (a M.! (j+1, i+1))
+          a' = a
+          b' = b
+          c' = c
       in t {
         tabZ = z'
       , tabA = a'

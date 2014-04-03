@@ -20,11 +20,12 @@ library
                     , base-unicode-symbols
                     , matrix
                     , vector
+                    , htrace
 
 
 executable hSimplex
     hs-source-dirs:   hSimplex
-    main-is:          Main.lhs
+    main-is:          Main.hs
     build-depends:    base == 4.*
                     , base-unicode-symbols
                     , LinearProgramming
@@ -44,6 +45,7 @@ Test-Suite Tests
                     , tasty
                     , tasty-hunit
                     , tasty-quickcheck
+    ghc-options:      -threaded -rtsopts
 
 source-repository head
   type:               mercurial
