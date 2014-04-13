@@ -2,6 +2,7 @@
 
 import Prelude.Unicode
 import LinearProgramming.Tableau
+import LinearProgramming.Latex
 import Data.Matrix as M
 import Data.Vector as V
 import Data.Ratio
@@ -70,6 +71,7 @@ f sample = do
   print tExpected
   putStrLn "Final: "
   print tFinal
+  putStrLn (toLatex tFinal)
 
 main = do
   f sample1

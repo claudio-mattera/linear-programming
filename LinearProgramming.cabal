@@ -16,6 +16,7 @@ extra-source-files:   README.md
 library
   exposed-modules:    LinearProgramming.Tableau
                     , LinearProgramming.Parser
+                    , LinearProgramming.Latex
   hs-source-dirs:     .
   build-depends:      base == 4.*
                     , base-unicode-symbols

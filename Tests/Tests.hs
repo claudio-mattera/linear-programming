@@ -8,6 +8,7 @@ import Test.Tasty.HUnit
 
 import qualified TestsTableau
 import qualified TestsCompleteExample
+import qualified TestsLatex
 
 main ∷ IO ()
 main =
@@ -17,4 +18,5 @@ tests ∷ TestTree
 tests = testGroup "Unit tests"
   [ TestsTableau.tests
   , TestsCompleteExample.tests
+  , TestsLatex.tests
   ]
