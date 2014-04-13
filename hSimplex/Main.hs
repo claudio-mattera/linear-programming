@@ -2,6 +2,7 @@
 
 import Prelude.Unicode
 import LinearProgramming.Tableau
+import LinearProgramming.Latex
 import Data.Matrix as M
 import Data.Vector as V
 import Data.Ratio
@@ -25,8 +26,8 @@ main = do
   print tFinal
 
   let k = Tableau {
-    tabN = 3
-  , tabM = 6
+    tabN = 6
+  , tabM = 3
   , tabA = fromLists [ [2,1,1,1,0,0]
                      , [4,2,3,0,1,0]
                      , [2,5,5,0,0,1]]
@@ -38,8 +39,8 @@ main = do
   }
 
       kFinal = Tableau {
-    tabN = 3
-  , tabM = 6
+    tabN = 6
+  , tabM = 3
   , tabA = fromLists [ [8%5,0,0,1,0,-1%5]
                      , [16%5,0,1,0,1,-2%5]
                      , [2%5,1,1,0,0,1%5]]
@@ -55,3 +56,6 @@ main = do
   print k
   print k'
   print kFinal
+
+
+  putStrLn (toLatex kFinal)
