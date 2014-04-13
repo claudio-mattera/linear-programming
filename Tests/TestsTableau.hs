@@ -14,32 +14,25 @@ import Test.QuickCheck
 import Data.Matrix as M
 import Data.Vector as V
 import Data.Ratio
-import Data.Foldable
 
 import LinearProgramming.Tableau
 
 tests ∷ TestTree
-tests = testGroup "Tableau"
-          [ unitTests
-          , qcProps
-          ]
-
-unitTests ∷ TestTree
-unitTests = testGroup "Unit tests"
-          [ testPivot
-          , testFeasible
-          , testObjectiveUpdate
-          ]
+tests = testGroup "Tableau" $
+        [ testGroup "Examples from Linear and Integer Programming course" $
+            Prelude.map makeTestsFromSample samples
+        ,  qcProps
+        ]
 
 qcProps ∷ TestTree
 qcProps = testGroup "Properties"
-  [ QC.testProperty "Tableau with all non-negative bs are infeasible" $
+  [ QC.testProperty "Tableau with all non-negative bs are feasible" $
       \t@Tableau{tabB = b} → V.all (≥ 0) b ==> isFeasible t
   , QC.testProperty "Tableau with negative bs are infeasible" $
       \t@Tableau{tabB = b} → V.any (< 0) b ==> not (isFeasible t)
-  , QC.testProperty "Tableau with all non-negative cs are optimal" $
+  , QC.testProperty "Tableau with all non-negative cs are final" $
       \t@Tableau{tabC = c} → V.all (≤ 0) c ==> isFinal t
-  , QC.testProperty "Tableau with negative cs are suboptimal" $
+  , QC.testProperty "Tableau with negative cs are non final" $
       \t@Tableau{tabC = c} → V.any (> 0) c ==> not (isFinal t)
   , QC.testProperty "Pivot does not decrease objective" $
       \tableau@Tableau{tabZ = z} →
@@ -50,79 +43,205 @@ qcProps = testGroup "Properties"
           in z' ≤ z
   ]
 
-testPivot =
-  testCase "Simple pivot" $
-    let tInitial = Tableau {
+
+type Sample = (String, Tableau, Tableau, Variable, Variable)
+
+sample1 ∷ Sample
+sample1 =
+  let desc = "Lecture \"A Complete Example\""
+
+      tInitial = Tableau {
+      tabN = 2
+    , tabM = 4
+    , tabA = fromLists [ [ 3, -1]
+                       , [ 0, -1]
+                       , [-1,  1]
+                       , [-1,  0]
+                       ]
+    , tabB = V.fromList [2, 11, 3, 6]
+    , tabC = V.fromList [1, 2]
+    , tabZ = 0
+    , tabBasicVariables = V.fromList [3,4,5,6]
+    , tabIndependantVariables = V.fromList [1,2]
+    }
+
+      tExpected = Tableau {
+      tabN = 2
+    , tabM = 4
+    , tabA = fromLists [ [ 3, -1]
+                       , [-3,  1]
+                       , [ 2, -1]
+                       , [-1,  0]
+                       ]
+    , tabB = V.fromList [2, 9, 5, 6]
+    , tabC = V.fromList [7, -2]
+    , tabZ = 4
+    , tabBasicVariables = V.fromList [2,4,5,6]
+    , tabIndependantVariables = V.fromList [1,3]
+    }
+
+      entering = 2
+      leaving = 3
+
+  in (desc, tInitial, tExpected, entering, leaving)
+
+
+sample2 ∷ Sample
+sample2 =
+  let desc = "Lecture \"Pivoting\""
+
+      tInitial = Tableau {
       tabN = 3
-    , tabM = 6
-    , tabA = fromLists [ [2,1,1,1,0,0]
-                       , [4,2,3,0,1,0]
-                       , [2,5,5,0,0,1]]
-    , tabB = V.fromList [14,28,30]
-    , tabC = V.fromList [-1,-2,1,0,0,0]
+    , tabM = 3
+    , tabA = fromLists [ [-2, -3, -1]
+                       , [-4, -1, -2]
+                       , [-3, -4, -2]
+                       ]
+    , tabB = V.fromList [5, 11, 8]
+    , tabC = V.fromList [5, 4, 3]
     , tabZ = 0
     , tabBasicVariables = V.fromList [4,5,6]
     , tabIndependantVariables = V.fromList [1,2,3]
     }
 
-        tExpected = Tableau {
+      tExpected = Tableau {
       tabN = 3
-    , tabM = 6
-    , tabA = fromLists [ [8%5,0,0,1,0,-1%5]
-                       , [16%5,0,1,0,1,-2%5]
-                       , [2%5,1,1,0,0,1%5]]
-    , tabB = V.fromList [8,16,6]
-    , tabC = V.fromList [-1%5,0,3,0,0,2%5]
-    , tabZ = 12
-    , tabBasicVariables = V.fromList [4,5,6]
-    , tabIndependantVariables = V.fromList [1,2,3]
+    , tabM = 3
+    , tabA = fromLists [ [-1%2, -3%2, -1%2]
+                       , [ 2,    5,    0]
+                       , [ 3%2,  1%2, -1%2]
+                       ]
+    , tabB = V.fromList [5%2, 1, 1%2]
+    , tabC = V.fromList [-5%2, -7%2, 1%2]
+    , tabZ = 25%2
+    , tabBasicVariables = V.fromList [1,5,6]
+    , tabIndependantVariables = V.fromList [4,2,3]
     }
 
-        tFinal = pivot tInitial 2 6
+      entering = 1
+      leaving = 4
 
-    in tFinal @?= tExpected
+  in (desc, tInitial, tExpected, entering, leaving)
 
+sample3 ∷ Sample
+sample3 =
+  let desc = "Lecture \"Infeasible problem example\""
 
-testFeasible =
-  testCase "Feasible tableau" $
-    let t = Tableau {
-      tabN = 3
-    , tabM = 6
-    , tabA = fromLists [ [2,1,1,1,0,0]
-                       , [4,2,3,0,1,0]
-                       , [2,5,5,0,0,1]]
-    , tabB = V.fromList [14,28,30]
-    , tabC = V.fromList [-1,-2,1,0,0,0]
+      tInitial = Tableau {
+      tabN = 4
+    , tabM = 4
+    , tabA = fromLists [ [ 1, -1,  1,  0]
+                       , [ 1,  0, -1, -1]
+                       , [ 1,  1,  0, -1]
+                       , [ 1,  0,  0,  1]
+                       ]
+    , tabB = V.fromList [5, 14, -6, -7]
+    , tabC = V.fromList [-1, 0, 0, 0]
     , tabZ = 0
-    , tabBasicVariables = V.fromList [4,5,6]
-    , tabIndependantVariables = V.fromList [1,2,3]
+    , tabBasicVariables = V.fromList [4,5,6,7]
+    , tabIndependantVariables = V.fromList [0,1,2,3]
     }
 
-    in isFeasible t @?= True
-
-testObjectiveUpdate =
-  testCase "Objective value update" $
-    let tInitial = Tableau {
-      tabN = 5
-    , tabM = 2
-    , tabA = fromLists [ [1%2,2,1,1,0]
-                       , [1,  2,4,0,1]]
-    , tabB = V.fromList [24,60]
-    , tabC = V.fromList [6,14,13,0,0]
-    , tabZ = 0
-    , tabBasicVariables = V.fromList [6,7]
-    , tabIndependantVariables = V.fromList [1,2,3,4,5]
+      tExpected = Tableau {
+      tabN = 4
+    , tabM = 4
+    , tabA = fromLists [ [ 1, -1,  1, -1]
+                       , [ 1,  0, -1, -2]
+                       , [ 1,  1,  0, -2]
+                       , [ 1,  0,  0, -1]
+                       ]
+    , tabB = V.fromList [12, 21, 1, 7]
+    , tabC = V.fromList [-1, 0, 0, 1]
+    , tabZ = -7
+    , tabBasicVariables = V.fromList [4,5,6,0]
+    , tabIndependantVariables = V.fromList [7,1,2,3]
     }
 
-        tFinal = pivot tInitial 2 6
+      entering = 0
+      leaving = 7
 
-    in tabZ tFinal @?= -168
+  in (desc, tInitial, tExpected, entering, leaving)
+
+samples ∷ [Sample]
+samples =
+  [ sample1
+  , sample2
+  , sample3
+  ]
+
+makeTestsFromSample ∷ Sample → TestTree
+makeTestsFromSample (desc, tInitial, tExpected, entering, leaving) =
+  testGroup desc
+          [ testObjectiveUpdate
+          , testBJ
+          , testB
+          , testRowJ
+          , testA
+          , testC
+          , testPivot
+          ]
+  where
+
+  tFinal = pivot tInitial entering leaving
+
+  testPivot =
+    testCase "Simple pivot" $
+      tFinal @?= tExpected
+
+  testA =
+    testCase "A update" $
+      let a = tabA tFinal
+          aExpected = tabA tExpected
+
+      in a @?= aExpected
+
+  testRowJ =
+    testCase "Row j update" $
+      let a = tabA tFinal
+          aExpected = tabA tExpected
+          aj = M.getRow 1 a
+          ajExpected = M.getRow 1 aExpected
+
+      in aj @?= ajExpected
+
+  testB =
+    testCase "B update" $
+      let b = tabB tFinal
+          bExpected = tabB tExpected
+
+      in b @?= bExpected
+
+  testC =
+    testCase "C update" $
+      let c = tabC tFinal
+          cExpected = tabC tExpected
+
+      in c @?= cExpected
+
+
+  testBJ =
+    testCase "Bj update" $
+      let b = tabB tFinal
+          bExpected = tabB tExpected
+          bj = b V.! 0
+          bjExpected = bExpected V.! 0
+
+      in bj @?= bjExpected
+
+
+  testObjectiveUpdate =
+    testCase "Objective value update" $
+      let z = tabZ tFinal
+          zExpected = tabZ tExpected
+      in z @?= zExpected
+
+
 
 
 arbitraryTableau ∷ Int → Gen Tableau
 arbitraryTableau size = do
-  n ← choose (0, size)
-  m ← choose (0, size)
+  n ← choose (2, size)
+  m ← choose (2, size)
   as ← vector (m*n)
   bs ← vector m
   cs ← vector n
@@ -134,8 +253,8 @@ arbitraryTableau size = do
   , tabB = V.fromList bs
   , tabC = V.fromList cs
   , tabZ = z
-  , tabBasicVariables = V.empty
-  , tabIndependantVariables = V.empty
+  , tabBasicVariables = V.fromList [1..n]
+  , tabIndependantVariables = V.fromList [n+1 .. n+m]
   }
   return t
 

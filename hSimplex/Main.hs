@@ -6,52 +6,70 @@ import Data.Matrix as M
 import Data.Vector as V
 import Data.Ratio
 
-main = do
+sample1 =
+    let tInitial = Tableau {
+      tabN = 2
+    , tabM = 4
+    , tabA = fromLists [ [ 3, -1]
+                       , [ 0, -1]
+                       , [-1,  1]
+                       , [-1,  0]
+                       ]
+    , tabB = V.fromList [2, 11, 3, 6]
+    , tabC = V.fromList [1, 2]
+    , tabZ = 0
+    , tabBasicVariables = V.fromList [3,4,5,6]
+    , tabIndependantVariables = V.fromList [1,2]
+    }
 
-  let tInitial = Tableau {
-    tabN = 5
-  , tabM = 2
-  , tabA = fromLists [ [1%2,2,1,1,0]
-                     , [1,  2,4,0,1]]
-  , tabB = V.fromList [24,60]
-  , tabC = V.fromList [6,14,13,0,0]
-  , tabZ = 0
-  , tabBasicVariables = V.fromList [6,7]
-  , tabIndependantVariables = V.fromList [1,2,3,4,5]
-  }
+        tExpected = Tableau {
+      tabN = 2
+    , tabM = 4
+    , tabA = fromLists [ [ 3, -1]
+                       , [-3,  1]
+                       , [ 2, -1]
+                       , [-1,  0]
+                       ]
+    , tabB = V.fromList [2, 9, 5, 6]
+    , tabC = V.fromList [7, -2]
+    , tabZ = 4
+    , tabBasicVariables = V.fromList [2,4,5,6]
+    , tabIndependantVariables = V.fromList [1,3]
+    }
 
-      tFinal = pivot tInitial 2 6
+        entering = 2
+        leaving = 3
 
+        tFinal = pivot tInitial entering leaving
+
+  in (tInitial, tExpected, entering, leaving)
+
+
+
+f sample = do
+  let (tInitial, tExpected, entering, leaving) = sample
+      Just i = V.elemIndex entering (tabIndependantVariables tInitial)
+      Just j = V.elemIndex leaving (tabBasicVariables tInitial)
+      bj = (tabB tInitial) V.! j
+      ci = (tabC tInitial) V.! i
+      aji = (tabA tInitial) M.! (j+1, i+1)
+      rows_range = [0..j-1] ⧺ [j+1..(tabM tInitial)-1]
+      tFinal = pivot tInitial entering leaving
+
+  putStrLn "Initial: "
+  putStrLn ("n: " ⧺ show (tabN tInitial))
+  putStrLn ("m: " ⧺ show (tabM tInitial))
+  print tInitial
+  putStrLn ("Entering variable: " ⧺ show entering ⧺ " (0-index: " ⧺ show i ⧺ ")")
+  putStrLn ("Leaving variable: " ⧺ show leaving ⧺ " (0-index: " ⧺ show j ⧺ ")")
+  putStrLn ("bj: " ⧺ show bj)
+  putStrLn ("ci: " ⧺ show ci)
+  putStrLn ("aji: " ⧺ show aji)
+  putStrLn ("Rows range: " ⧺ show rows_range)
+  putStrLn "Expected: "
+  print tExpected
+  putStrLn "Final: "
   print tFinal
 
-  let k = Tableau {
-    tabN = 3
-  , tabM = 6
-  , tabA = fromLists [ [2,1,1,1,0,0]
-                     , [4,2,3,0,1,0]
-                     , [2,5,5,0,0,1]]
-  , tabB = V.fromList [14,28,30]
-  , tabC = V.fromList [-1,-2,1,0,0,0]
-  , tabZ = 0
-  , tabBasicVariables = V.fromList [4,5,6]
-  , tabIndependantVariables = V.fromList [1,2,3]
-  }
-
-      kFinal = Tableau {
-    tabN = 3
-  , tabM = 6
-  , tabA = fromLists [ [8%5,0,0,1,0,-1%5]
-                     , [16%5,0,1,0,1,-2%5]
-                     , [2%5,1,1,0,0,1%5]]
-  , tabB = V.fromList [8,16,6]
-  , tabC = V.fromList [-1%5,0,3,0,0,2%5]
-  , tabZ = 12
-  , tabBasicVariables = V.fromList [4,5,6]
-  , tabIndependantVariables = V.fromList [1,2,3]
-  }
-
-      k' = pivot k 2 6
-
-  print k
-  print k'
-  print kFinal
+main = do
+  f sample1

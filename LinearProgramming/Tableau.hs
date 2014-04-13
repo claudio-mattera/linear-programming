@@ -19,6 +19,7 @@ import Data.Maybe (isJust)
 import Data.Function (on)
 
 import Debug.HTrace
+import Data.Ratio
 
 {-
 NOTE: Data.Matrix indices range from (1,1) to (n,m), while Data.Vector indices
@@ -54,7 +55,7 @@ instance Show Tableau where
           z' = fromLists [[z]]
           t2 = z' <|> rowVector c
           t3 = t1 <-> t2
-      in show t3
+      in show t3 ⧺ "\n" ⧺ show basicVariables ⧺ "\n" ⧺ show independantVariables
 
 pivot ∷ Tableau → Variable → Variable → Tableau
 pivot t@(Tableau {
@@ -69,15 +70,46 @@ pivot t@(Tableau {
   }) entering leaving =
       let Just i = V.elemIndex entering independantVariables
           Just j = V.elemIndex leaving basicVariables
-          z' = z - (c V.! i) ⋅ (b V.! j) ÷ (a M.! (j+1, i+1))
-          a' = a
-          b' = b
-          c' = c
-      in t {
-        tabZ = z'
-      , tabA = a'
+
+          aji = a M.! (j+1, i+1)
+          bj = b V.! j
+          ci = c V.! i
+
+          z' = z - ci ⋅ bj ÷ aji
+          a' = M.scaleRow (-1 ÷ aji) (j+1) a
+          a'' = M.setElem (1 ÷ aji) (j+1, i+1) a'
+
+          rows_range = [0..j-1] ⧺ [j+1..m-1]
+
+          aFinal = Prelude.foldl f a'' rows_range
+          f m k =
+            let aki = a M.! (k+1, i+1)
+                m' = M.combineRows (k+1) aki (j+1) m
+            in M.setElem (m' M.! (k+1, i+1) - aki) (k+1, i+1) m'
+
+
+          bReplacements = Prelude.foldl g [] rows_range
+          g ls k =
+            let bk = b V.! k
+                aki = a M.! (k+1,i+1)
+            in (k, bk - aki ⋅ bj ÷ aji) : ls
+
+          bj' = - bj ÷ aji
+          b' = b V.// ((j, bj') : bReplacements)
+
+          ej = M.rowVector $ M.getRow (i+1) $ M.identity n
+          aj = M.rowVector $ M.getRow (j+1) aFinal
+          cm = M.rowVector c
+          c' = M.getRow 1 $ cm + M.scaleMatrix ci (aj - ej)
+      in Tableau {
+        tabN = n
+      , tabM = m
+      , tabZ = z'
+      , tabA = aFinal
       , tabB = b'
       , tabC = c'
+      , tabBasicVariables = basicVariables // [(j, entering)]
+      , tabIndependantVariables = independantVariables // [(i, leaving)]
       }
 
 isFeasible ∷ Tableau → Bool
