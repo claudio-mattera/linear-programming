@@ -3,6 +3,7 @@
 import Prelude.Unicode
 import LinearProgramming.Tableau
 import LinearProgramming.Latex
+import LinearProgramming.Parser
 import Data.Matrix as M
 import Data.Vector as V
 import Data.Ratio
@@ -74,4 +75,28 @@ f sample = do
   putStrLn (toLatex tFinal)
 
 main = do
-  f sample1
+  --f sample1
+
+  let text1 = "max x1+-2*x2\n" ⧺
+       "\n" ⧺
+       "3*x1+x2 = 2\n" ⧺
+       "x2 <= 11\n" ⧺
+       "x1 + 1*x2 >= 3\n" ⧺
+       "7 x1 <= 6\n"
+
+      p1 = other text1
+
+  putStrLn text1
+  print p1
+
+  let text2 = "min x1+2*x2\n" ⧺
+       "\n" ⧺
+       "3*x1+x2 = 2\n" ⧺
+       "x2 <= 11\n" ⧺
+       "x1 + 1*x2 >= 3\n" ⧺
+       "x1 <= 6\n"
+
+      p2 = other text2
+
+  putStrLn text2
+  print p2

@@ -31,12 +31,12 @@ tests = testGroup "Complete example from LP course"
           ]
 
 
-text = "max x1 + 2 * x2" ⧺
-       "" ⧺
-       "-3 * x1 + x2 <= 2" ⧺
-       "x2 <= 11" ⧺
-       "x1 - x2 <= 3" ⧺
-       "x1 <= 6"
+text = "max x1 + 2 * x2\n" ⧺
+       "\n" ⧺
+       "-3 * x1 + x2 <= 2\n" ⧺
+       "x2 <= 11\n" ⧺
+       "x1 - x2 <= 3\n" ⧺
+       "x1 <= 6\n"
 
 t0 = Tableau {
   tabN = 2
@@ -114,7 +114,7 @@ t3 = Tableau {
 
 testParser =
   testCase "Parsing the problem" $
-    let t = parse text
+    let Right t = parseTableau text
     in t @?= t0
 
 testPivot1 =
