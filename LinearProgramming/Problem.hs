@@ -142,9 +142,6 @@ makeCanonical (objType, obj, constraints) =
   toCanonical ∷ Constraint → CanonicalConstraint
   toCanonical (as, _, b) = (as, b)
 
-  negateCoefficients ∷ [Coefficient] → [Coefficient]
-  negateCoefficients = map (id *** (⋅(-1)))
-
 
 -- | Convert a 'CanonicalProblem' to a 'Tableau'.
 computeTableau ∷ CanonicalProblem → Tableau
@@ -154,7 +151,7 @@ computeTableau (obj, constraints) =
       m = length constraints
       slackVariables = map (+n) [1..m]
 
-      generateLine (cs, _) = V.generate n (safeGet 0 cs)
+      generateLine (cs, _) = V.generate n ∘ safeGet 0 ∘ negateCoefficients $ cs
 
       a = foldl1 (M.<->) $ map (M.rowVector ∘ generateLine) constraints
 
@@ -183,3 +180,8 @@ computeTableau (obj, constraints) =
     case lookup (i+1) v of
       Just r  → r
       Nothing → def
+
+
+negateCoefficients ∷ [Coefficient] → [Coefficient]
+negateCoefficients = map (id *** (⋅(-1)))
+

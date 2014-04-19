@@ -34,7 +34,8 @@ parseProblem text = parse parser "" text
 parser = do
   (objType, obj) ← objectiveLine
   many1 newline
-  cs ← constraintLine `sepEndBy` newline
+  cs ← constraintLine `sepEndBy` many1 newline
+  many newline
   eof
   return (objType, obj, cs)
 

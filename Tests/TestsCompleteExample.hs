@@ -14,6 +14,10 @@ import Data.Ratio
 import LinearProgramming.Tableau
 import LinearProgramming.Parser
 
+isRight ∷ Either a b → Bool
+isRight (Right _) = True
+isRight (Left _) = False
+
 tests ∷ TestTree
 tests = testGroup "Complete example from LP course"
           [ testParser
@@ -31,11 +35,11 @@ tests = testGroup "Complete example from LP course"
           ]
 
 
-text = "max x1 + 2 * x2\n" ⧺
+text = "max x1 + 2 x2\n" ⧺
        "\n" ⧺
-       "-3 * x1 + x2 <= 2\n" ⧺
+       "-3 x1 + x2 <= 2\n" ⧺
        "x2 <= 11\n" ⧺
-       "x1 - x2 <= 3\n" ⧺
+       "x1 + -1 x2 <= 3\n" ⧺
        "x1 <= 6\n"
 
 t0 = Tableau {
@@ -114,8 +118,12 @@ t3 = Tableau {
 
 testParser =
   testCase "Parsing the problem" $
-    let Right t = parseTableau text
-    in t @?= t0
+    let result = parseTableau text
+        Right t = result
+        Left err = result
+    in do
+      isRight result @? ("Parsing failed: " ⧺ (show err))
+      t @?= t0
 
 testPivot1 =
   testCase "Pivoting - 1st step" $

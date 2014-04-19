@@ -10,6 +10,7 @@ import qualified TestsTableau
 import qualified TestsCompleteExample
 import qualified TestsLatex
 import qualified TestsParser
+import qualified TestsProblem
 
 main ∷ IO ()
 main =
@@ -21,4 +22,5 @@ tests = testGroup "Unit tests"
   , TestsCompleteExample.tests
   , TestsLatex.tests
   , TestsParser.tests
+  , TestsProblem.tests
   ]
