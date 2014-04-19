@@ -77,26 +77,16 @@ f sample = do
 main = do
   --f sample1
 
-  let text1 = "max x1+-2*x2\n" ⧺
-       "\n" ⧺
-       "3*x1+x2 = 2\n" ⧺
-       "x2 <= 11\n" ⧺
-       "x1 + 1*x2 >= 3\n" ⧺
-       "7 x1 <= 6\n"
-
-      p1 = other text1
-
-  putStrLn text1
-  print p1
-
-  let text2 = "min x1+2*x2\n" ⧺
+  let text = "min x1+2*x2\n" ⧺
        "\n" ⧺
        "3*x1+x2 = 2\n" ⧺
        "x2 <= 11\n" ⧺
        "x1 + 1*x2 >= 3\n" ⧺
        "x1 <= 6\n"
 
-      p2 = other text2
+      p = parseProblem text
+      t = parseTableau text
 
-  putStrLn text2
-  print p2
+  putStrLn text
+  print p
+  print t

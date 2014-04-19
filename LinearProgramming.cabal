@@ -15,6 +15,7 @@ extra-source-files:   README.md
 
 library
   exposed-modules:    LinearProgramming.Tableau
+                    , LinearProgramming.Problem
                     , LinearProgramming.Parser
                     , LinearProgramming.Latex
   hs-source-dirs:     .

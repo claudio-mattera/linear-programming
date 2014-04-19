@@ -2,62 +2,46 @@
 
 module LinearProgramming.Parser (
     parseTableau
-  , other
+  , parseProblem
   ) where
 
 import Prelude.Unicode
 
-import Data.Matrix as M hiding ((<|>))
-import Data.Vector as V hiding (map, foldl)
 import Text.Parsec
---import Text.ParserCombinators.Parsec
 
 import Control.Applicative ((<*>), (<*), (*>), (<$>), liftA2)
-import Control.Arrow ((***))
 
 import LinearProgramming.Tableau
-
-data Relation = Equal
-              | GreaterEqual
-              | LesserEqual
-              deriving (Show, Eq)
-
-instance Read Relation where
-  readsPrec _ r = case r of
-    "<=" → [(LesserEqual, "")]
-    "≤" → [(LesserEqual, "")]
-    "=" → [(Equal, "")]
-    ">=" → [(GreaterEqual, "")]
-    "≥" → [(GreaterEqual, "")]
+import LinearProgramming.Problem
 
 {-
 max x1 + 2 * x2
 
--3 * x1 + x2 <= 2
+-3 * x1 + x2 = 2
 x2 <= 11
-x1 - x2 <= 3
-x1 <=
+x1 - x2 >= 3
+x1 <= 6
 -}
 
-parseTableau ∷ String → Either String Tableau
-parseTableau text = undefined
+parseTableau ∷ String → Either ParseError Tableau
+parseTableau text = do
+  problem ← parseProblem text
+  return (computeTableau ∘ makeCanonical $ problem)
 
-other ∷ String → Either ParseError RawTableau
-other text = parse parser "" text
+parseProblem ∷ String → Either ParseError Problem
+parseProblem text = parse parser "" text
 
 parser = do
-  obj ← objectiveLine
+  (objType, obj) ← objectiveLine
   many1 newline
   cs ← constraintLine `sepEndBy` newline
   eof
-  return (obj, cs)
+  return (objType, obj, cs)
 
 objectiveLine = do
   f ← try (string "max") <|> string "min"
   e ← many1 whitespace *> expression
-  return $ if f ≡ "min"
-    then map (id *** (⋅(-1))) e
-    else e
+  return (if f ≡ "min" then Minimize else Maximize, e)
 
 constraintLine = do
   e ← expression <* whitespaces
@@ -90,17 +74,3 @@ relationSymbol =
 
 whitespace = oneOf " \t"
 whitespaces = many whitespace
-
-
-
-
-
-type RawTableau = ([(Int, Int)], [([(Int, Int)], Relation, Int)])
-
-makeCanonical ∷ RawTableau → RawTableau
-makeCanonical (obj, constraints) =
-  let maxIndex = undefined
-      slackVariablesCount = foldl (\c (_, r, _) → case r of
-        Equal → c
-        _ → c+1) 0 constraints
-  in undefined
