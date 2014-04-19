@@ -1,5 +1,8 @@
 {-# LANGUAGE UnicodeSyntax #-}
 
+{- | Latex representation of tableau.
+-}
+
 module LinearProgramming.Latex (
     toLatex
   , showRational
@@ -15,6 +18,10 @@ import Data.Ratio
 
 type ShowFunction = Value → String
 
+-- | Generates a Latex string that represents the rational number @r@.
+--
+--   It generates the most compact representation, depending whether @r@ is
+--   integer, rational, positive or negative.
 showRational ∷ ShowFunction
 showRational r
   | denominator r ≡ 1   = "$" ⧺ show (numerator r) ⧺ "$"
@@ -23,6 +30,11 @@ showRational r
   | otherwise           = "$\\frac{" ⧺ show (numerator r) ⧺
                           "}{" ⧺ show (denominator r) ⧺ "}$"
 
+
+-- | Generates the Latex string that represents a 'Tableau'.
+--
+--   It uses the @tabular@ environment to draw the typical mathematical
+--   representation of a LP tableau.
 toLatex ∷ Tableau → String
 toLatex Tableau {
     tabM = m

@@ -108,7 +108,7 @@ instance Read Relation where
     "≥" → [(GreaterEqual, "")]
 
 
--- | Convert a 'Problem' to its canonical form.
+-- | Converts a 'Problem' to its canonical form.
 makeCanonical ∷ Problem → CanonicalProblem
 makeCanonical (objType, obj, constraints) =
   let (objType', obj') =
@@ -123,14 +123,14 @@ makeCanonical (objType, obj, constraints) =
   convertEqualityConstraints = foldl convertEqualityConstraint []
   convertGreaterConstraints = foldl convertGreaterConstraint []
 
-  -- Convert equality constraints in double inequality constraints
+  -- Converts equality constraints in double inequality constraints
   -- x ≡ b   ⇒   x ≤ b ∧ x ≥ b
   convertEqualityConstraint ∷ [Constraint] → Constraint → [Constraint]
   convertEqualityConstraint constraints (as, Equal, b) =
     (as, LesserEqual, b) : (as, GreaterEqual, b) : constraints
   convertEqualityConstraint constraints c = c : constraints
 
-  -- Convert greater inequality constraints in negated lesser inequality
+  -- Converts greater inequality constraints in negated lesser inequality
   -- constraints
   -- x ≥ b   ⇒   -x ≤ -b
   convertGreaterConstraint ∷ [Constraint] → Constraint → [Constraint]
@@ -143,7 +143,7 @@ makeCanonical (objType, obj, constraints) =
   toCanonical (as, _, b) = (as, b)
 
 
--- | Convert a 'CanonicalProblem' to a 'Tableau'.
+-- | Converts a 'CanonicalProblem' to a 'Tableau'.
 computeTableau ∷ CanonicalProblem → Tableau
 computeTableau (obj, constraints) =
   let toVariableIndex (cs, _) = maximum (map fst cs)

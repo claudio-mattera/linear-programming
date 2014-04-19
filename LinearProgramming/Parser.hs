@@ -1,5 +1,16 @@
 {-# LANGUAGE UnicodeSyntax #-}
 
+{- | A parser to read LP problems in textual representation.
+
+    > max x1 + 2 * x2
+    >
+    > -3 * x1 + x2 = 2
+    > x2 <= 11
+    > x1 - x2 >= 3
+    > x1 <= 6
+
+-}
+
 module LinearProgramming.Parser (
     parseTableau
   , parseProblem
@@ -14,22 +25,19 @@ import Control.Applicative ((<*>), (<*), (*>), (<$>), liftA2)
 import LinearProgramming.Tableau
 import LinearProgramming.Problem
 
-{-
-max x1 + 2 * x2
 
--3 * x1 + x2 = 2
-x2 <= 11
-x1 - x2 >= 3
-x1 <= 6
--}
-
+-- | Parses a 'Tableau' from a 'String'. It first parses to a 'Problem' using
+--   'parseProblem', then converts it to a 'Tableau' using
+--   'Problem.makeCanonical' and 'Problem.computeTableau'.
 parseTableau ∷ String → Either ParseError Tableau
-parseTableau text = do
-  problem ← parseProblem text
-  return (computeTableau ∘ makeCanonical $ problem)
+parseTableau text =
+  parseProblem text >>= (return ∘ computeTableau ∘ makeCanonical)
 
+
+-- | Parses a 'Problem' from a 'String'.
 parseProblem ∷ String → Either ParseError Problem
 parseProblem text = parse parser "" text
+
 
 parser = do
   (objType, obj) ← objectiveLine
