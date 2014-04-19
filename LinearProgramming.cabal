@@ -1,12 +1,12 @@
 name:                 LinearProgramming
 version:              0.1.0.0
-synopsis:             Super cool solver for Linear Programming problems
+synopsis:             Solver for Linear Programming problems
 description:          This program solves LP problems using the simplex method
 license:              OtherLicense
 license-file:         cddl.txt
 author:               Claudio Mattera
 maintainer:           claudio@mattera.it
-homepage:             http://bitbucket.org/claudio/linear-programming
+homepage:             https://bitbucket.org/claudio/linear-programming
 copyright:            (c) 2013-2014 Claudio Mattera
 category:             Math
 build-type:           Simple
@@ -15,26 +15,25 @@ extra-source-files:   README.md
 
 library
   exposed-modules:    LinearProgramming.Tableau
+                    , LinearProgramming.Simplex
                     , LinearProgramming.Problem
                     , LinearProgramming.Parser
                     , LinearProgramming.Latex
-  hs-source-dirs:     .
+  hs-source-dirs:     src
   build-depends:      base == 4.*
                     , base-unicode-symbols
                     , matrix
                     , vector
                     , parsec
-                    , htrace
-
 
 executable hSimplex
     hs-source-dirs:   hSimplex
     main-is:          Main.hs
     build-depends:    base == 4.*
                     , base-unicode-symbols
-                    , LinearProgramming
                     , matrix
                     , vector
+                    , LinearProgramming
 
 Test-Suite Tests
     hs-source-dirs:   Tests
@@ -42,15 +41,15 @@ Test-Suite Tests
     main-is:          Tests.hs
     build-depends:    base == 4.*
                     , base-unicode-symbols
-                    , LinearProgramming
-                    , QuickCheck
                     , matrix
                     , vector
                     , tasty
                     , tasty-hunit
                     , tasty-quickcheck
+                    , QuickCheck
+                    , LinearProgramming
     ghc-options:      -threaded -rtsopts
 
 source-repository head
   type:               mercurial
-  location:           http://bitbucket.org/claudio/linear-programming
+  location:           https://bitbucket.org/claudio/linear-programming

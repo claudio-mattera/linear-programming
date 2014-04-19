@@ -17,8 +17,6 @@ import Data.Matrix as M
 import Data.Vector as V
 import Data.Maybe (isJust)
 import Data.Function (on)
-
-import Debug.HTrace
 import Data.Ratio
 
 {-
