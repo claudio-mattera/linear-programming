@@ -9,7 +9,6 @@ module LinearProgramming.Tableau (
   , isFinal
   , chooseEnteringVariable
   , chooseLeavingVariable
-  , generateAuxiliaryTableau
   ) where
 
 import Prelude.Unicode
@@ -142,29 +141,3 @@ chooseLeavingVariable Tableau {
       then Nothing
       else Just leavingVariable
 
-
-generateAuxiliaryTableau ∷ Tableau → Tableau
-generateAuxiliaryTableau t@(Tableau {
-    tabM = m
-  , tabN = n
-  , tabA = a
-  , tabB = b
-  , tabC = c
-  , tabZ = z
-  , tabBasicVariables = basicVariables
-  , tabIndependantVariables = independantVariables
-  }) =
-    let x0Col = V.replicate m 1
-        a' = M.colVector x0Col M.<|> a
-        c' = V.replicate (n+1) 0 V.// [(0, -1)]
-        independantVariables' = 0 `V.cons` independantVariables
-    in Tableau {
-      tabM = m
-    , tabN = n + 1
-    , tabA = a'
-    , tabB = b
-    , tabC = c'
-    , tabZ = 0
-    , tabBasicVariables = basicVariables
-    , tabIndependantVariables = independantVariables'
-    }
