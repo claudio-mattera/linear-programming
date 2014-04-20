@@ -26,20 +26,23 @@ tests = testGroup "Tableau" $
 qcProps ∷ TestTree
 qcProps = testGroup "Properties"
   [ QC.testProperty "Tableau with all non-negative bs are feasible" $
-      \t@Tableau{tabB = b} → V.all (≥ 0) b ==> isFeasible t
+      \feasibleTableau →
+        let t@Tableau{tabB = b} = unFeasibleTableau feasibleTableau
+        in V.all (≥ 0) b ==> isFeasible t
   , QC.testProperty "Tableau with negative bs are infeasible" $
       \t@Tableau{tabB = b} → V.any (< 0) b ==> not (isFeasible t)
-  , QC.testProperty "Tableau with all non-negative cs are final" $
-      \t@Tableau{tabC = c} → V.all (≤ 0) c ==> isFinal t
   , QC.testProperty "Tableau with negative cs are non final" $
       \t@Tableau{tabC = c} → V.any (> 0) c ==> not (isFinal t)
-  , QC.testProperty "Pivot does not decrease objective" $
-      \tableau@Tableau{tabZ = z} →
-        isFeasible tableau ∧ not (isFinal tableau) ==>
+  , QC.testProperty "Pivoting does not decrease objective" $
+      \feasibleTableau →
+        let tableau@Tableau{tabZ = z} = unFeasibleTableau feasibleTableau
+        in isFeasible tableau ∧ not (isFinal tableau) ==>
           let Just entering = chooseEnteringVariable tableau
-              Just leaving = chooseLeavingVariable tableau entering
-              Tableau {tabZ = z'} = pivot tableau entering leaving
-          in z' ≤ z
+          in case chooseLeavingVariable tableau entering of
+            Nothing → True -- Accept if the tableau is unbounded
+            Just leaving →
+              let Tableau {tabZ = z'} = pivot tableau entering leaving
+              in z' ≥ z
   ]
 
 
@@ -293,10 +296,21 @@ arbitraryTableau size = do
   , tabB = V.fromList bs
   , tabC = V.fromList cs
   , tabZ = z
-  , tabBasicVariables = V.fromList [1..n]
-  , tabIndependantVariables = V.fromList [n+1 .. n+m]
+  , tabBasicVariables = V.fromList [n+1 .. n+m]
+  , tabIndependantVariables = V.fromList [1..n]
   }
   return t
 
 instance Arbitrary Tableau where
   arbitrary = sized arbitraryTableau
+
+
+newtype FeasibleTableau = FeasibleTableau { unFeasibleTableau ∷ Tableau } deriving (Eq, Show)
+
+instance Arbitrary FeasibleTableau where
+  arbitrary = do
+    tableau ← arbitrary
+    let b' = V.map abs $ tabB tableau
+    return (FeasibleTableau tableau {
+      tabB = b'
+    })

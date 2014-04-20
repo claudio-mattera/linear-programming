@@ -52,8 +52,9 @@ instance Show Tableau where
           z' = M.fromLists [[z]]
           t2 = z' M.<|> M.rowVector c
           t3 = t1 M.<-> t2
-      in show t3 ⧺ "\n" ⧺ show basicVariables ⧺ " (m: " ⧺ show m ⧺ ")\n" ⧺
-       show independantVariables ⧺ " (n: " ⧺ show n ⧺ ")"
+      in show t3 ⧺ "\n" ⧺
+        "Basic: " ⧺ show (V.toList basicVariables) ⧺ " (m: " ⧺ show m ⧺ ")\n" ⧺
+        "Indep: " ⧺ show (V.toList independantVariables) ⧺ " (n: " ⧺ show n ⧺ ")"
 
 pivot ∷ Tableau → Variable → Variable → Tableau
 pivot t@(Tableau {
