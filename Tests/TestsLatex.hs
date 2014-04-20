@@ -2,7 +2,6 @@
 
 module TestsLatex (tests) where
 
-import Prelude hiding (all, any)
 import Prelude.Unicode
 
 import Test.Tasty
@@ -11,8 +10,8 @@ import Test.Tasty.HUnit
 
 import Test.QuickCheck
 
-import Data.Matrix as M
-import Data.Vector as V
+import qualified Data.Matrix as M
+import qualified Data.Vector as V
 import Data.Ratio
 import Data.Foldable
 
@@ -55,10 +54,10 @@ testToLatex =
     let tableau = Tableau {
       tabN = 6
     , tabM = 3
-    , tabA = fromLists [ [8%5,0,0,1,0,-1%5]
-                       , [16%5,0,1,0,1,-2%5]
-                       , [2%5,1,1,0,0,1%5]
-                       ]
+    , tabA = M.fromLists [ [8%5,0,0,1,0,-1%5]
+                         , [16%5,0,1,0,1,-2%5]
+                         , [2%5,1,1,0,0,1%5]
+                         ]
     , tabB = V.fromList [8,16,6]
     , tabC = V.fromList [-1%5,0,3,0,0,2%5]
     , tabZ = 12

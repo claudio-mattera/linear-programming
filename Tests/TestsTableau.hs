@@ -2,7 +2,6 @@
 
 module TestsTableau (tests) where
 
-import Prelude hiding (all, any)
 import Prelude.Unicode
 
 import Test.Tasty
@@ -11,8 +10,8 @@ import Test.Tasty.HUnit
 
 import Test.QuickCheck
 
-import Data.Matrix as M
-import Data.Vector as V
+import qualified Data.Matrix as M
+import qualified Data.Vector as V
 import Data.Ratio
 
 import LinearProgramming.Tableau
@@ -53,11 +52,11 @@ sample1 =
       tInitial = Tableau {
       tabN = 2
     , tabM = 4
-    , tabA = fromLists [ [ 3, -1]
-                       , [ 0, -1]
-                       , [-1,  1]
-                       , [-1,  0]
-                       ]
+    , tabA = M.fromLists [ [ 3, -1]
+                         , [ 0, -1]
+                         , [-1,  1]
+                         , [-1,  0]
+                         ]
     , tabB = V.fromList [2, 11, 3, 6]
     , tabC = V.fromList [1, 2]
     , tabZ = 0
@@ -68,11 +67,11 @@ sample1 =
       tExpected = Tableau {
       tabN = 2
     , tabM = 4
-    , tabA = fromLists [ [ 3, -1]
-                       , [-3,  1]
-                       , [ 2, -1]
-                       , [-1,  0]
-                       ]
+    , tabA = M.fromLists [ [ 3, -1]
+                         , [-3,  1]
+                         , [ 2, -1]
+                         , [-1,  0]
+                         ]
     , tabB = V.fromList [2, 9, 5, 6]
     , tabC = V.fromList [7, -2]
     , tabZ = 4
@@ -93,10 +92,10 @@ sample2 =
       tInitial = Tableau {
       tabN = 3
     , tabM = 3
-    , tabA = fromLists [ [-2, -3, -1]
-                       , [-4, -1, -2]
-                       , [-3, -4, -2]
-                       ]
+    , tabA = M.fromLists [ [-2, -3, -1]
+                         , [-4, -1, -2]
+                         , [-3, -4, -2]
+                         ]
     , tabB = V.fromList [5, 11, 8]
     , tabC = V.fromList [5, 4, 3]
     , tabZ = 0
@@ -107,10 +106,10 @@ sample2 =
       tExpected = Tableau {
       tabN = 3
     , tabM = 3
-    , tabA = fromLists [ [-1%2, -3%2, -1%2]
-                       , [ 2,    5,    0]
-                       , [ 3%2,  1%2, -1%2]
-                       ]
+    , tabA = M.fromLists [ [-1%2, -3%2, -1%2]
+                         , [ 2,    5,    0]
+                         , [ 3%2,  1%2, -1%2]
+                         ]
     , tabB = V.fromList [5%2, 1, 1%2]
     , tabC = V.fromList [-5%2, -7%2, 1%2]
     , tabZ = 25%2
@@ -130,11 +129,11 @@ sample3 =
       tInitial = Tableau {
       tabN = 4
     , tabM = 4
-    , tabA = fromLists [ [ 1, -1,  1,  0]
-                       , [ 1,  0, -1, -1]
-                       , [ 1,  1,  0, -1]
-                       , [ 1,  0,  0,  1]
-                       ]
+    , tabA = M.fromLists [ [ 1, -1,  1,  0]
+                         , [ 1,  0, -1, -1]
+                         , [ 1,  1,  0, -1]
+                         , [ 1,  0,  0,  1]
+                         ]
     , tabB = V.fromList [5, 14, -6, -7]
     , tabC = V.fromList [-1, 0, 0, 0]
     , tabZ = 0
@@ -145,11 +144,11 @@ sample3 =
       tExpected = Tableau {
       tabN = 4
     , tabM = 4
-    , tabA = fromLists [ [ 1, -1,  1, -1]
-                       , [ 1,  0, -1, -2]
-                       , [ 1,  1,  0, -2]
-                       , [ 1,  0,  0, -1]
-                       ]
+    , tabA = M.fromLists [ [ 1, -1,  1, -1]
+                         , [ 1,  0, -1, -2]
+                         , [ 1,  1,  0, -2]
+                         , [ 1,  0,  0, -1]
+                         ]
     , tabB = V.fromList [12, 21, 1, 7]
     , tabC = V.fromList [-1, 0, 0, 1]
     , tabZ = -7

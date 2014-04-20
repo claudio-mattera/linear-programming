@@ -2,16 +2,11 @@
 
 module TestsParser (tests) where
 
-import Prelude hiding (all, any)
 import Prelude.Unicode
 
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Data.Matrix as M
-import Data.Vector as V
-
-import LinearProgramming.Tableau
 import LinearProgramming.Problem
 import LinearProgramming.Parser
 

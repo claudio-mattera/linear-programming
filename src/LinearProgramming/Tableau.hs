@@ -11,10 +11,9 @@ module LinearProgramming.Tableau (
   , chooseLeavingVariable
   ) where
 
-import Prelude hiding (all, any, zipWith3, zip)
 import Prelude.Unicode
-import Data.Matrix as M
-import Data.Vector as V
+import qualified Data.Matrix as M
+import qualified Data.Vector as V
 import Data.Maybe (isJust)
 import Data.Function (on)
 import Data.Ratio
@@ -49,10 +48,10 @@ instance Show Tableau where
   , tabBasicVariables = basicVariables
   , tabIndependantVariables = independantVariables
   } =
-      let t1 = colVector b <|> a
-          z' = fromLists [[z]]
-          t2 = z' <|> rowVector c
-          t3 = t1 <-> t2
+      let t1 = M.colVector b M.<|> a
+          z' = M.fromLists [[z]]
+          t2 = z' M.<|> M.rowVector c
+          t3 = t1 M.<-> t2
       in show t3 ⧺ "\n" ⧺ show basicVariables ⧺ "\n" ⧺ show independantVariables
 
 pivot ∷ Tableau → Variable → Variable → Tableau
@@ -106,8 +105,8 @@ pivot t@(Tableau {
       , tabA = aFinal
       , tabB = b'
       , tabC = c'
-      , tabBasicVariables = basicVariables // [(j, entering)]
-      , tabIndependantVariables = independantVariables // [(i, leaving)]
+      , tabBasicVariables = basicVariables V.// [(j, entering)]
+      , tabIndependantVariables = independantVariables V.// [(i, leaving)]
       }
 
 isFeasible ∷ Tableau → Bool
@@ -131,9 +130,9 @@ chooseLeavingVariable Tableau {
 , tabBasicVariables = vb
 , tabIndependantVariables = vi
 } entering =
-  let Just enteringIndex = elemIndex entering vi
-      aCol = getCol (enteringIndex + 1) a
-      coefficients = zipWith3 (\i a b →
+  let Just enteringIndex = V.elemIndex entering vi
+      aCol = M.getCol (enteringIndex + 1) a
+      coefficients = V.zipWith3 (\i a b →
         (i, if b ≠ 0 then Just (a ÷ b) else Nothing)) vb aCol b
       finiteCoefficients = V.map (\(i, Just j) → (i, j)) $ V.filter (isJust ∘ snd) coefficients
       (leavingVariable, minimalCoefficient) = V.minimumBy (compare `on` snd) finiteCoefficients

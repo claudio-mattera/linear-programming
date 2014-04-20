@@ -12,8 +12,8 @@ import LinearProgramming.Tableau
 
 import Prelude hiding (all, any, zipWith3, zip)
 import Prelude.Unicode
-import Data.Matrix as M
-import Data.Vector as V
+import qualified Data.Matrix as M
+import qualified Data.Vector as V
 import Data.Ratio
 
 type ShowFunction = Value → String
@@ -46,8 +46,8 @@ toLatex Tableau {
   , tabBasicVariables = basicVariables
   , tabIndependantVariables = independantVariables
   } =
-    let rows_indices = [0..m-1]
-        rows = Prelude.map writeLine rows_indices
+    let rowsIndices = [0..m-1]
+        rows = Prelude.map writeLine rowsIndices
         last_row = showRational z ⧺ " & " ⧺
           V.foldl1 (\a x → a ⧺ " & " ⧺ x) (V.map showRational c)
     in  "\\begin{tabular}{c|" ⧺ Prelude.replicate n 'c' ⧺ "}\n" ⧺

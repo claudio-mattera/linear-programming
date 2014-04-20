@@ -7,8 +7,8 @@ import Prelude.Unicode
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Data.Matrix as M
-import Data.Vector as V
+import qualified Data.Matrix as M
+import qualified Data.Vector as V
 import Data.Ratio
 
 import LinearProgramming.Tableau
@@ -45,11 +45,11 @@ text = "max x1 + 2 x2\n" ⧺
 t0 = Tableau {
   tabN = 2
 , tabM = 4
-, tabA = fromLists [ [ 3, -1]
-                   , [ 0, -1]
-                   , [-1,  1]
-                   , [-1,  0]
-                   ]
+, tabA = M.fromLists [ [ 3, -1]
+                     , [ 0, -1]
+                     , [-1,  1]
+                     , [-1,  0]
+                     ]
 , tabB = V.fromList [2, 11, 3, 6]
 , tabC = V.fromList [1, 2]
 , tabZ = 0
@@ -65,11 +65,11 @@ l0 = 3
 t1 = Tableau {
   tabN = 2
 , tabM = 4
-, tabA = fromLists [ [ 3, -1]
-                   , [-3,  1]
-                   , [ 2, -1]
-                   , [-1,  0]
-                   ]
+, tabA = M.fromLists [ [ 3, -1]
+                     , [-3,  1]
+                     , [ 2, -1]
+                     , [-1,  0]
+                     ]
 , tabB = V.fromList [2, 9, 5, 6]
 , tabC = V.fromList [7, -2]
 , tabZ = 4
@@ -84,11 +84,11 @@ l1 = 4
 t2 = Tableau {
   tabN = 2
 , tabM = 4
-, tabA = fromLists [ [-1,    0]
-                   , [-1%3,  1%3]
-                   , [-2%3, -1%3]
-                   , [ 1%3, -1%3]
-                   ]
+, tabA = M.fromLists [ [-1,    0]
+                     , [-1%3,  1%3]
+                     , [-2%3, -1%3]
+                     , [ 1%3, -1%3]
+                     ]
 , tabB = V.fromList [11,3,11,3]
 , tabC = V.fromList [-7%3, 1%3]
 , tabZ = 25
@@ -103,11 +103,11 @@ l2 = 6
 t3 = Tableau {
   tabN = 2
 , tabM = 4
-, tabA = fromLists [ [-1,  0]
-                   , [ 0, -1]
-                   , [-1,  1]
-                   , [ 1, -3]
-                   ]
+, tabA = M.fromLists [ [-1,  0]
+                     , [ 0, -1]
+                     , [-1,  1]
+                     , [ 1, -3]
+                     ]
 , tabB = V.fromList [11,6,8,9]
 , tabC = V.fromList [-2,-1]
 , tabZ = 28
