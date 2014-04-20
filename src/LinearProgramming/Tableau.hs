@@ -132,11 +132,11 @@ chooseLeavingVariable Tableau {
 , tabIndependantVariables = vi
 } entering =
   let Just enteringIndex = elemIndex entering vi
-      aCol = getCol enteringIndex a
+      aCol = getCol (enteringIndex + 1) a
       coefficients = zipWith3 (\i a b →
-        (i, if b ≠ 0 then Just (- a ÷ b) else Nothing)) vi aCol b
+        (i, if b ≠ 0 then Just (a ÷ b) else Nothing)) vb aCol b
       finiteCoefficients = V.map (\(i, Just j) → (i, j)) $ V.filter (isJust ∘ snd) coefficients
-      (leavingVariable, _) = V.minimumBy (compare `on` snd) finiteCoefficients
-  in if V.null finiteCoefficients
+      (leavingVariable, minimalCoefficient) = V.minimumBy (compare `on` snd) finiteCoefficients
+  in if V.null finiteCoefficients ∨ minimalCoefficient ≥ 0
       then Nothing
       else Just leavingVariable
