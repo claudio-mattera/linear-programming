@@ -27,6 +27,7 @@ main = do
       , tabZ = 0
       , tabBasicVariables = V.fromList [4,5,6,7]
       , tabIndependantVariables = V.fromList [1,2,3]
+      , tabAuxiliaryData = Nothing
       }
 
       (result, history) = runSimplex tableau

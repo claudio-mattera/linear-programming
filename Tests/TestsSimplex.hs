@@ -43,6 +43,7 @@ sample1 =
       , tabZ = 0
       , tabBasicVariables = V.fromList [3,4,5,6]
       , tabIndependantVariables = V.fromList [1,2]
+      , tabAuxiliaryData = Nothing
       }
 
       tExpected = Tableau {
@@ -58,6 +59,7 @@ sample1 =
       , tabZ = 28
       , tabBasicVariables = V.fromList [2,1,5,3]
       , tabIndependantVariables = V.fromList [4,6]
+      , tabAuxiliaryData = Nothing
       }
 
   in (desc, tInitial, Right tExpected)
@@ -79,6 +81,7 @@ sample2 =
       , tabZ = 0
       , tabBasicVariables = V.fromList [4,5,6,7]
       , tabIndependantVariables = V.fromList [1,2,3]
+      , tabAuxiliaryData = Nothing
       }
 
   in (desc, tInitial, Left Unbounded)

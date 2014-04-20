@@ -171,6 +171,7 @@ computeTableau (obj, constraints) =
   , tabZ = z
   , tabBasicVariables = V.fromList slackVariables
   , tabIndependantVariables = V.fromList [1..n]
+  , tabAuxiliaryData = Nothing
   }
 
   where

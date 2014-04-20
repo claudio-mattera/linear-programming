@@ -65,6 +65,7 @@ sample1 =
     , tabZ = 0
     , tabBasicVariables = V.fromList [3,4,5,6]
     , tabIndependantVariables = V.fromList [1,2]
+    , tabAuxiliaryData = Nothing
     }
 
       tExpected = Tableau {
@@ -80,6 +81,7 @@ sample1 =
     , tabZ = 4
     , tabBasicVariables = V.fromList [2,4,5,6]
     , tabIndependantVariables = V.fromList [1,3]
+    , tabAuxiliaryData = Nothing
     }
 
       entering = 2
@@ -104,6 +106,7 @@ sample2 =
     , tabZ = 0
     , tabBasicVariables = V.fromList [4,5,6]
     , tabIndependantVariables = V.fromList [1,2,3]
+    , tabAuxiliaryData = Nothing
     }
 
       tExpected = Tableau {
@@ -118,6 +121,7 @@ sample2 =
     , tabZ = 25%2
     , tabBasicVariables = V.fromList [1,5,6]
     , tabIndependantVariables = V.fromList [4,2,3]
+    , tabAuxiliaryData = Nothing
     }
 
       entering = 1
@@ -142,6 +146,7 @@ sample3 =
     , tabZ = 0
     , tabBasicVariables = V.fromList [4,5,6,7]
     , tabIndependantVariables = V.fromList [0,1,2,3]
+    , tabAuxiliaryData = Nothing
     }
 
       tExpected = Tableau {
@@ -157,6 +162,7 @@ sample3 =
     , tabZ = -7
     , tabBasicVariables = V.fromList [4,5,6,0]
     , tabIndependantVariables = V.fromList [7,1,2,3]
+    , tabAuxiliaryData = Nothing
     }
 
       entering = 0
@@ -181,6 +187,7 @@ sample4 =
       , tabZ = 0
       , tabBasicVariables = V.fromList [4,5,6,7]
       , tabIndependantVariables = V.fromList [1,2,3]
+      , tabAuxiliaryData = Nothing
       }
 
       tExpected = Tableau {
@@ -196,6 +203,7 @@ sample4 =
       , tabZ = 12
       , tabBasicVariables = V.fromList [4,5,6,2]
       , tabIndependantVariables = V.fromList [1,7,3]
+      , tabAuxiliaryData = Nothing
       }
 
       entering = 2
@@ -298,6 +306,7 @@ arbitraryTableau size = do
   , tabZ = z
   , tabBasicVariables = V.fromList [n+1 .. n+m]
   , tabIndependantVariables = V.fromList [1..n]
+  , tabAuxiliaryData = Nothing
   }
   return t
 

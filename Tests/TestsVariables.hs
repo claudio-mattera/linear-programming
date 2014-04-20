@@ -37,6 +37,7 @@ sample1 =
     , tabZ = 10
     , tabBasicVariables = V.fromList [4,5,6]
     , tabIndependantVariables = V.fromList [1,2,3]
+    , tabAuxiliaryData = Nothing
     }
 
       entering = Just 1
@@ -62,6 +63,7 @@ sample2 =
       , tabZ = 0
       , tabBasicVariables = V.fromList [3,4,5,6]
       , tabIndependantVariables = V.fromList [1,2]
+      , tabAuxiliaryData = Nothing
       }
 
       entering = Just 2
@@ -87,6 +89,7 @@ sample3 =
       , tabZ = 4
       , tabBasicVariables = V.fromList [2,4,5,6]
       , tabIndependantVariables = V.fromList [1,3]
+      , tabAuxiliaryData = Nothing
       }
 
       entering = Just 1
@@ -111,6 +114,7 @@ sample4 =
       , tabZ = 25
       , tabBasicVariables = V.fromList [2,1,5,6]
       , tabIndependantVariables = V.fromList [4,3]
+      , tabAuxiliaryData = Nothing
       }
 
       entering = Just 3
@@ -134,6 +138,7 @@ sample5 =
       , tabZ = 0
       , tabBasicVariables = V.fromList [4,5,6]
       , tabIndependantVariables = V.fromList [1,2,3]
+      , tabAuxiliaryData = Nothing
       }
 
       entering = Just 1
@@ -158,6 +163,7 @@ sample6 =
       , tabZ = 0
       , tabBasicVariables = V.fromList [4,5,6,7]
       , tabIndependantVariables = V.fromList [1,2,3]
+      , tabAuxiliaryData = Nothing
       }
 
       entering = Just 2
@@ -182,6 +188,7 @@ sample7 =
       , tabZ = 12
       , tabBasicVariables = V.fromList [4,5,6,2]
       , tabIndependantVariables = V.fromList [1,7,3]
+      , tabAuxiliaryData = Nothing
       }
 
       entering = Just 1

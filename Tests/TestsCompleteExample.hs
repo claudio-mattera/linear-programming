@@ -55,6 +55,7 @@ t0 = Tableau {
 , tabZ = 0
 , tabBasicVariables = V.fromList [3,4,5,6]
 , tabIndependantVariables = V.fromList [1,2]
+, tabAuxiliaryData = Nothing
 }
 
 
@@ -75,6 +76,7 @@ t1 = Tableau {
 , tabZ = 4
 , tabBasicVariables = V.fromList [2,4,5,6]
 , tabIndependantVariables = V.fromList [1,3]
+, tabAuxiliaryData = Nothing
 }
 
 e1 = 1
@@ -94,6 +96,7 @@ t2 = Tableau {
 , tabZ = 25
 , tabBasicVariables = V.fromList [2,1,5,6]
 , tabIndependantVariables = V.fromList [4,3]
+, tabAuxiliaryData = Nothing
 }
 
 e2 = 3
@@ -113,6 +116,7 @@ t3 = Tableau {
 , tabZ = 28
 , tabBasicVariables = V.fromList [2,1,5,3]
 , tabIndependantVariables = V.fromList [4,6]
+, tabAuxiliaryData = Nothing
 }
 
 

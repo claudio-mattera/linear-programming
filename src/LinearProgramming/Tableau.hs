@@ -9,6 +9,8 @@ module LinearProgramming.Tableau (
   , isFinal
   , chooseEnteringVariable
   , chooseLeavingVariable
+  , generateAuxiliaryTableau
+  , toOriginalTableau
   ) where
 
 import Prelude.Unicode
@@ -26,6 +28,7 @@ range from 0 to n-1.
 type Variable = Int
 type Value = ℚ
 
+
 data Tableau = Tableau {
   tabM                    ∷ Int
 , tabN                    ∷ Int
@@ -35,7 +38,9 @@ data Tableau = Tableau {
 , tabZ                    ∷ Value
 , tabBasicVariables       ∷ V.Vector Variable
 , tabIndependantVariables ∷ V.Vector Variable
+, tabAuxiliaryData        ∷ Maybe (Value, V.Vector Value)
 } deriving Eq
+
 
 instance Show Tableau where
   show Tableau {
@@ -47,14 +52,20 @@ instance Show Tableau where
   , tabZ = z
   , tabBasicVariables = basicVariables
   , tabIndependantVariables = independantVariables
+  , tabAuxiliaryData = auxiliaryData
   } =
       let t1 = M.colVector b M.<|> a
           z' = M.fromLists [[z]]
           t2 = z' M.<|> M.rowVector c
           t3 = t1 M.<-> t2
+          auxiliaryDataText = case auxiliaryData of
+            Nothing           → ""
+            Just (auxZ, auxC) → "aux Z: " ⧺ show auxZ ⧺ ", aux C: " ⧺ show auxC
       in "\n" ⧺ show t3 ⧺
         "Basic: " ⧺ show (V.toList basicVariables) ⧺ " (m: " ⧺ show m ⧺ ")\n" ⧺
-        "Indep: " ⧺ show (V.toList independantVariables) ⧺ " (n: " ⧺ show n ⧺ ")"
+        "Indep: " ⧺ show (V.toList independantVariables) ⧺ " (n: " ⧺ show n ⧺
+        ")\n" ⧺ auxiliaryDataText
+
 
 pivot ∷ Tableau → Variable → Variable → Tableau
 pivot t@(Tableau {
@@ -66,6 +77,7 @@ pivot t@(Tableau {
   , tabZ = z
   , tabBasicVariables = basicVariables
   , tabIndependantVariables = independantVariables
+  , tabAuxiliaryData = auxiliaryData
   }) entering leaving =
       let Just i = V.elemIndex entering independantVariables
           Just j = V.elemIndex leaving basicVariables
@@ -100,6 +112,17 @@ pivot t@(Tableau {
           aj = M.rowVector $ M.getRow (j+1) aFinal
           cm = M.rowVector c
           c' = M.getRow 1 $ cm + M.scaleMatrix ci (aj - ej)
+
+          auxiliaryData' = case auxiliaryData of
+            Nothing → Nothing
+            Just (auxZ, auxC) →
+              let auxCi = auxC V.! i
+                  auxZ' = auxZ - auxCi ⋅ bj ÷ aji
+
+                  auxCm = M.rowVector auxC
+                  auxC' = M.getRow 1 $ auxCm + M.scaleMatrix auxCi (aj - ej)
+
+              in Just (auxZ', auxC')
       in Tableau {
         tabN = n
       , tabM = m
@@ -109,13 +132,17 @@ pivot t@(Tableau {
       , tabC = c'
       , tabBasicVariables = basicVariables V.// [(j, entering)]
       , tabIndependantVariables = independantVariables V.// [(i, leaving)]
+      , tabAuxiliaryData = auxiliaryData'
       }
+
 
 isFeasible ∷ Tableau → Bool
 isFeasible Tableau {tabB = b} = V.all (≥ 0) b
 
+
 isFinal ∷ Tableau → Bool
 isFinal Tableau {tabC = c} = V.all (≤ 0) c
+
 
 chooseEnteringVariable ∷ Tableau → Maybe Variable
 chooseEnteringVariable Tableau {tabC = c, tabIndependantVariables = v} =
@@ -124,6 +151,7 @@ chooseEnteringVariable Tableau {tabC = c, tabIndependantVariables = v} =
   in if largestValue ≥ 0
       then Just largestVariable
       else Nothing
+
 
 chooseLeavingVariable ∷ Tableau → Variable → Maybe Variable
 chooseLeavingVariable Tableau {
@@ -142,3 +170,58 @@ chooseLeavingVariable Tableau {
       then Nothing
       else Just leavingVariable
 
+
+generateAuxiliaryTableau ∷ Tableau → Tableau
+generateAuxiliaryTableau t@(Tableau {
+    tabM = m
+  , tabN = n
+  , tabA = a
+  , tabB = b
+  , tabC = c
+  , tabZ = z
+  , tabBasicVariables = basicVariables
+  , tabIndependantVariables = independantVariables
+  }) =
+    let x0Col = V.replicate m 1
+        a' = M.colVector x0Col M.<|> a
+        c' = V.replicate (n+1) 0 V.// [(0, -1)]
+        independantVariables' = 0 `V.cons` independantVariables
+    in Tableau {
+      tabM = m
+    , tabN = n + 1
+    , tabA = a'
+    , tabB = b
+    , tabC = c'
+    , tabZ = 0
+    , tabBasicVariables = basicVariables
+    , tabIndependantVariables = independantVariables'
+    , tabAuxiliaryData = Just (z, 0 `V.cons` c)
+    }
+
+
+toOriginalTableau ∷ Tableau → Tableau
+toOriginalTableau tableau@(Tableau {
+    tabM = m
+  , tabN = n
+  , tabA = a
+  , tabB = b
+  , tabBasicVariables = basicVariables
+  , tabIndependantVariables = independantVariables
+  , tabAuxiliaryData = Just (z, c)
+  }) =
+    let Just i0 = V.elemIndex 0 independantVariables
+        a' = M.submatrix 1 m 1 i0 a M.<|> M.submatrix 1 m (i0 + 2) n a
+        c' = V.take i0 c V.++ V.drop (i0 + 1) c
+        independantVariables' =
+          V.take i0 independantVariables V.++ V.drop (i0 + 1) independantVariables
+    in Tableau {
+      tabM = m
+    , tabN = n - 1
+    , tabA = a'
+    , tabB = b
+    , tabC = c'
+    , tabZ = z
+    , tabBasicVariables = basicVariables
+    , tabIndependantVariables = independantVariables'
+    , tabAuxiliaryData = Nothing
+  }

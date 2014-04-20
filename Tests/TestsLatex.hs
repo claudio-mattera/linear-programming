@@ -63,6 +63,7 @@ testToLatex =
     , tabZ = 12
     , tabBasicVariables = V.fromList [4,5,6]
     , tabIndependantVariables = V.fromList [1,2,3]
+    , tabAuxiliaryData = Nothing
     }
 
         textExpected =
