@@ -5,6 +5,7 @@ module Main where
 import Test.Tasty
 
 import qualified TestsTableau
+import qualified TestsAuxiliaryTableau
 import qualified TestsVariables
 import qualified TestsCompleteExample
 import qualified TestsSimplex
@@ -19,6 +20,7 @@ main =
 tests ∷ TestTree
 tests = testGroup "Unit tests"
   [ TestsTableau.tests
+  , TestsAuxiliaryTableau.tests
   , TestsVariables.tests
   , TestsCompleteExample.tests
   , TestsSimplex.tests

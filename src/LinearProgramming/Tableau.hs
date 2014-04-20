@@ -9,6 +9,7 @@ module LinearProgramming.Tableau (
   , isFinal
   , chooseEnteringVariable
   , chooseLeavingVariable
+  , generateAuxiliaryTableau
   ) where
 
 import Prelude.Unicode
@@ -52,7 +53,8 @@ instance Show Tableau where
           z' = M.fromLists [[z]]
           t2 = z' M.<|> M.rowVector c
           t3 = t1 M.<-> t2
-      in show t3 ⧺ "\n" ⧺ show basicVariables ⧺ "\n" ⧺ show independantVariables
+      in show t3 ⧺ "\n" ⧺ show basicVariables ⧺ " (m: " ⧺ show m ⧺ ")\n" ⧺
+       show independantVariables ⧺ " (n: " ⧺ show n ⧺ ")"
 
 pivot ∷ Tableau → Variable → Variable → Tableau
 pivot t@(Tableau {
@@ -139,3 +141,30 @@ chooseLeavingVariable Tableau {
   in if V.null finiteCoefficients ∨ minimalCoefficient ≥ 0
       then Nothing
       else Just leavingVariable
+
+
+generateAuxiliaryTableau ∷ Tableau → Tableau
+generateAuxiliaryTableau t@(Tableau {
+    tabM = m
+  , tabN = n
+  , tabA = a
+  , tabB = b
+  , tabC = c
+  , tabZ = z
+  , tabBasicVariables = basicVariables
+  , tabIndependantVariables = independantVariables
+  }) =
+    let x0Col = V.replicate m 1
+        a' = M.colVector x0Col M.<|> a
+        c' = V.replicate (n+1) 0 V.// [(0, -1)]
+        independantVariables' = 0 `V.cons` independantVariables
+    in Tableau {
+      tabM = m
+    , tabN = n + 1
+    , tabA = a'
+    , tabB = b
+    , tabC = c'
+    , tabZ = 0
+    , tabBasicVariables = basicVariables
+    , tabIndependantVariables = independantVariables'
+    }
