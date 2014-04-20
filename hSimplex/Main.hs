@@ -4,6 +4,8 @@ import Prelude.Unicode
 
 import qualified Data.Matrix as M
 import qualified Data.Vector as V
+import qualified Data.DList as DL
+
 import Data.Ratio
 
 import Control.Monad (forM_)
@@ -34,4 +36,4 @@ main = do
 
   putStrLn ""
   putStrLn "History:"
-  forM_ history (\t → print t >> putStrLn "")
+  forM_ (DL.toList history) (\t → print t >> putStrLn "")

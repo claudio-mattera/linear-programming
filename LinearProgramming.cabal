@@ -26,6 +26,7 @@ library
                     , mtl
                     , transformers
                     , EitherT
+                    , dlist
                     , matrix
                     , vector
                     , parsec
@@ -35,6 +36,7 @@ executable hSimplex
     main-is:          Main.hs
     build-depends:    base == 4.*
                     , base-unicode-symbols
+                    , dlist
                     , matrix
                     , vector
                     , LinearProgramming
