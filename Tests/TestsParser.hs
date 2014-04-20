@@ -30,6 +30,7 @@ tests = testGroup "Parser"
           , greaterThanOneCoefficientsWithoutMul
           , minimizationWithInequalities
           , negativeCoefficients
+          , newlinesBeforeObjective
           , newlinesAfterObjective
           , newlinesBeforeEof
           , newlinesBetweenConstraints
@@ -135,6 +136,31 @@ minimizationWithInequalities =
 negativeCoefficients =
   testCase "Negative coefficients" $
     let text = "min -1 x1 + 3 x2\n" ⧺
+               "x1 + x2 + x3 >= 6\n" ⧺
+               "-2 x2 + x4 = -8\n" ⧺
+               "9 x2 + -7 x4 <= 8\n" ⧺
+               ""
+
+        problemExpected = (Minimize, [(1,-1), (2,3)], constraintsExpected)
+        constraintsExpected = [ ([(1,1), (2,1), (3,1)], GreaterEqual, 6)
+                              , ([(2,-2), (4,1)], Equal, -8)
+                              , ([(2,9), (4,-7)], LesserEqual, 8)
+                              ]
+
+        result = parseProblem text
+        Right tableau = result
+
+    in do
+      isRight result @? ("Parsing failed: " ⧺ (show ∘ fromLeft $ result))
+      tableau @?= problemExpected
+
+newlinesBeforeObjective =
+  testCase "Newlines before objective function" $
+    let text = "\n" ⧺
+               "\n" ⧺
+               "min -1 x1 + 3 x2\n" ⧺
+               "\n" ⧺
+               "\n" ⧺
                "x1 + x2 + x3 >= 6\n" ⧺
                "-2 x2 + x4 = -8\n" ⧺
                "9 x2 + -7 x4 <= 8\n" ⧺

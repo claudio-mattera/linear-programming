@@ -40,6 +40,7 @@ parseProblem text = parse parser "" text
 
 
 parser = do
+  many newline
   (objType, obj) ← objectiveLine
   many1 newline
   cs ← constraintLine `sepEndBy` many1 newline
