@@ -162,11 +162,52 @@ sample3 =
 
   in (desc, tInitial, tExpected, entering, leaving)
 
+sample4 ∷ Sample
+sample4 =
+  let desc = "Lecture \"Handling Unbounded Problems\""
+
+      tInitial = Tableau {
+        tabN = 3
+      , tabM = 4
+      , tabA = M.fromLists [ [-1,  1,  0]
+                           , [ 1,  0, -1]
+                           , [ 2,  0, -1]
+                           , [ 1, -1,  0]
+                           ]
+      , tabB = V.fromList [5,6,2,4]
+      , tabC = V.fromList [2,3,-5]
+      , tabZ = 0
+      , tabBasicVariables = V.fromList [4,5,6,7]
+      , tabIndependantVariables = V.fromList [1,2,3]
+      }
+
+      tExpected = Tableau {
+        tabN = 3
+      , tabM = 4
+      , tabA = M.fromLists [ [ 0, -1,  0]
+                           , [ 1,  0, -1]
+                           , [ 2,  0, -1]
+                           , [ 1, -1,  0]
+                           ]
+      , tabB = V.fromList [9,6,2,4]
+      , tabC = V.fromList [5,-3,-5]
+      , tabZ = 12
+      , tabBasicVariables = V.fromList [4,5,6,2]
+      , tabIndependantVariables = V.fromList [1,7,3]
+      }
+
+      entering = 2
+      leaving = 7
+
+  in (desc, tInitial, tExpected, entering, leaving)
+
+
 samples ∷ [Sample]
 samples =
   [ sample1
   , sample2
   , sample3
+  , sample4
   ]
 
 makeTestsFromSample ∷ Sample → TestTree
