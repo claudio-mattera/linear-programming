@@ -19,7 +19,7 @@ import LinearProgramming.Tableau
 tests ∷ TestTree
 tests = testGroup "Tableau" $
         [ testGroup "Examples from Linear and Integer Programming course" $
-            Prelude.map makeTestsFromSample samples
+            map makeTestsFromSample samples
         ,  qcProps
         ]
 
