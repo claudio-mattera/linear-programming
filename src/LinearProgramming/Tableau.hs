@@ -54,30 +54,38 @@ instance Show Tableau where
   , tabIndependantVariables = independantVariables
   , tabAuxiliaryData = auxiliaryData
   } =
-      let t1 = fmap sr0 (M.colVector b) M.<|> fmap sr a
+      let t1 = fmap sr0 (M.colVector b) M.<|> foldl (\a colNo → M.mapCol (addVar colNo) colNo a) (fmap sr a) [1..n]
           z' = fmap sr0 (M.fromLists [[z]])
-          t2 = z' M.<|> fmap sr0 (M.rowVector c)
+          t2 = z' M.<|> foldl (\a colNo → M.mapCol (addVar colNo) colNo a) (fmap sr (M.rowVector c)) [1..n]
           t3 = t1 M.<-> t2
-          auxiliaryDataText = case auxiliaryData of
-            Nothing           → ""
-            Just (auxZ, auxC) → "aux Z: " ⧺ show auxZ ⧺ ", aux C: " ⧺ show (V.toList auxC)
-      in "\n" ⧺ filter (≠ '"') (show t3) ⧺
-        "Basic: " ⧺ show (V.toList basicVariables) ⧺ " (m: " ⧺ show m ⧺ ")\n" ⧺
-        "Indep: " ⧺ show (V.toList independantVariables) ⧺ " (n: " ⧺ show n ⧺
-        ")\n" ⧺ auxiliaryDataText
+          t4 = M.colVector (V.generate m (\k → "x" ⧺ show (basicVariables V.! k))) M.<-> M.rowVector (V.singleton "z")
+          t5 = fmap (\x → x ⧺ " = ") t4 M.<|> t3
+          auxiliaryDataRow = case auxiliaryData of
+            Nothing           → M.fromList 0 (n+2) []
+            Just (auxZ, auxC) → M.fromLists [["aux Z = ", sr0 auxZ] ⧺ (V.toList ∘ M.getRow 1) (foldl (\a colNo → M.mapCol (addVar colNo) colNo a) (fmap sr0 (M.rowVector auxC)) [1..n])]
+          t6 = t5 M.<-> auxiliaryDataRow
+      in "\n" ⧺ filter (≠ '"') (show t6)
 
     where
+
+    addVar ∷ Int → Int → String → String
+    addVar _ _ [] = []
+    addVar k _ xs =
+      let v = independantVariables V.! (k - 1)
+      in if xs ≡ "1"
+        then " x" ⧺ show v ⧺ " "
+        else " " ⧺ xs ⧺ " x" ⧺ show v ⧺ " "
 
     sr ∷ Value → String
     sr r
       | numerator r ≡ 0     = ""
       | denominator r ≡ 1   = show (numerator r)
-      | otherwise           = show (numerator r) ⧺ " / " ⧺ show (denominator r)
+      | otherwise           = show (numerator r) ⧺ "/" ⧺ show (denominator r)
 
     sr0 ∷ Value → String
     sr0 r
       | denominator r ≡ 1   = show (numerator r)
-      | otherwise           = show (numerator r) ⧺ " / " ⧺ show (denominator r)
+      | otherwise           = show (numerator r) ⧺ "/" ⧺ show (denominator r)
 
 
 
