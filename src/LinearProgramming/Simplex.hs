@@ -3,7 +3,7 @@
 module LinearProgramming.Simplex (
     Error(..)
   , Log(..)
-  , optimize
+  , LogEntry(..)
   , runSimplex
   ) where
 
@@ -59,8 +59,8 @@ leavingVariable tableau entering =
     Just l  → return l
 
 
-optimize ∷ Tableau → EitherT Error (Writer Log) Tableau
-optimize initialTableau = do
+simplex ∷ Tableau → EitherT Error (Writer Log) Tableau
+simplex initialTableau = do
     logString "Starting"
     logTableau initialTableau
     helper initialTableau
@@ -76,6 +76,31 @@ optimize initialTableau = do
         logTableau nextTableau
         helper nextTableau
 
+twoPhasesSimplex ∷ Tableau → EitherT Error (Writer Log) Tableau
+twoPhasesSimplex initialTableau
+  | isFeasible initialTableau = do
+      logString "Initial tableau is already feasible, skipping to phase two"
+      simplex initialTableau
+  | otherwise = do
+      logString "Generating auxiliary tableau"
+      let auxiliaryTableau = generateAuxiliaryTableau initialTableau
+      finalAuxiliaryTableau ← phaseOneSimplex auxiliaryTableau
+      logString "Obtaining a feasible tableau for the original problem"
+      let feasibleTableau = toOriginalTableau finalAuxiliaryTableau
+      logString "Phase two simplex"
+      simplex feasibleTableau
+
+
+phaseOneSimplex ∷ Tableau → EitherT Error (Writer Log) Tableau
+phaseOneSimplex tableau = do
+      logString "Forcing x0 to enter the basis"
+      let entering = 0
+      leaving ← leavingVariable tableau entering
+      let initialTableau = pivot tableau entering leaving
+      logString "Phase one simplex"
+      simplex initialTableau
+
+
 
 runSimplex ∷ Tableau → (Either Error Tableau, Log)
-runSimplex = runWriter ∘ runEitherT ∘ optimize
+runSimplex = runWriter ∘ runEitherT ∘ twoPhasesSimplex
