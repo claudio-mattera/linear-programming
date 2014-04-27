@@ -9,6 +9,8 @@ module LinearProgramming.Simplex (
 
 import Prelude.Unicode
 
+import Data.Function (on)
+
 import Control.Monad.Trans (lift)
 import Control.Monad.Writer
 import Control.Monad.Trans.Either
@@ -59,6 +61,13 @@ leavingVariable tableau entering =
     Just l  → return l
 
 
+originalTableau ∷ Tableau → EitherT Error (Writer Log) Tableau
+originalTableau tableau =
+  case toOriginalTableau tableau of
+    Nothing → logError Infeasible >> returnError Infeasible
+    Just t  → return t
+
+
 simplex ∷ Tableau → EitherT Error (Writer Log) Tableau
 simplex initialTableau = do
     logString "Starting"
@@ -71,7 +80,9 @@ simplex initialTableau = do
     | isFinal tableau          = return tableau
     | otherwise                = do
         entering ← enteringVariable tableau
+        logString ("Entering variable is " ⧺ show entering)
         leaving ← leavingVariable tableau entering
+        logString ("Leaving variable is " ⧺ show leaving)
         let nextTableau = pivot tableau entering leaving
         logTableau nextTableau
         helper nextTableau
@@ -86,7 +97,7 @@ twoPhasesSimplex initialTableau
       let auxiliaryTableau = generateAuxiliaryTableau initialTableau
       finalAuxiliaryTableau ← phaseOneSimplex auxiliaryTableau
       logString "Obtaining a feasible tableau for the original problem"
-      let feasibleTableau = toOriginalTableau finalAuxiliaryTableau
+      feasibleTableau ← originalTableau finalAuxiliaryTableau
       logString "Phase two simplex"
       simplex feasibleTableau
 
@@ -95,7 +106,7 @@ phaseOneSimplex ∷ Tableau → EitherT Error (Writer Log) Tableau
 phaseOneSimplex tableau = do
       logString "Forcing x0 to enter the basis"
       let entering = 0
-      leaving ← leavingVariable tableau entering
+          leaving = getMinimalNegativeCoefficientVariable tableau
       let initialTableau = pivot tableau entering leaving
       logString "Phase one simplex"
       simplex initialTableau

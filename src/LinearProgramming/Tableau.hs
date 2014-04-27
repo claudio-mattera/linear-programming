@@ -9,6 +9,7 @@ module LinearProgramming.Tableau (
   , isFinal
   , chooseEnteringVariable
   , chooseLeavingVariable
+  , getMinimalNegativeCoefficientVariable
   , generateAuxiliaryTableau
   , toOriginalTableau
   ) where
@@ -203,6 +204,15 @@ chooseLeavingVariable Tableau {
   in result
 
 
+getMinimalNegativeCoefficientVariable ∷ Tableau → Variable
+getMinimalNegativeCoefficientVariable Tableau {
+    tabB = b
+  , tabBasicVariables = vb
+  } =
+    let pairs = V.zip vb b
+    in fst $ V.minimumBy (compare `on` snd) pairs
+
+
 generateAuxiliaryTableau ∷ Tableau → Tableau
 generateAuxiliaryTableau t@(Tableau {
     tabM = m
@@ -231,7 +241,7 @@ generateAuxiliaryTableau t@(Tableau {
     }
 
 
-toOriginalTableau ∷ Tableau → Tableau
+toOriginalTableau ∷ Tableau → Maybe Tableau
 toOriginalTableau tableau@(Tableau {
     tabM = m
   , tabN = n
@@ -240,13 +250,13 @@ toOriginalTableau tableau@(Tableau {
   , tabBasicVariables = basicVariables
   , tabIndependantVariables = independantVariables
   , tabAuxiliaryData = Just (z, c)
-  }) =
-    let Just i0 = V.elemIndex 0 independantVariables
-        a' = M.submatrix 1 m 1 i0 a M.<|> M.submatrix 1 m (i0 + 2) n a
+  }) = do
+    i0 ← V.elemIndex 0 independantVariables
+    let a' = M.submatrix 1 m 1 i0 a M.<|> M.submatrix 1 m (i0 + 2) n a
         c' = V.take i0 c V.++ V.drop (i0 + 1) c
         independantVariables' =
           V.take i0 independantVariables V.++ V.drop (i0 + 1) independantVariables
-    in Tableau {
+    Just (Tableau {
       tabM = m
     , tabN = n - 1
     , tabA = a'
@@ -256,4 +266,4 @@ toOriginalTableau tableau@(Tableau {
     , tabBasicVariables = basicVariables
     , tabIndependantVariables = independantVariables'
     , tabAuxiliaryData = Nothing
-  }
+  })

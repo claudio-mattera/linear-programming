@@ -199,7 +199,7 @@ completeExample =
 
   testFeasibleTableau =
     testCase "Computing the feasible tableau for the original problem" $
-      let t = toOriginalTableau tAux3
+      let Just t = toOriginalTableau tAux3
       in t @?= tf
 
 
