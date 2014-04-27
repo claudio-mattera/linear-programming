@@ -196,6 +196,56 @@ sample7 =
 
   in (desc, tableau, entering, leaving)
 
+sample8 ∷ Sample
+sample8 =
+  let desc = "Lecture \"Pivoting the Auxiliary Dictionary\" (1)"
+
+      tableau = Tableau {
+        tabN = 3
+      , tabM = 4
+      , tabA = M.fromLists [ [ 1, -2,  1]
+                           , [ 1, -2,  0]
+                           , [ 1, -3,  3]
+                           , [ 1, -3,  1]
+                           ]
+      , tabB = V.fromList [2,6,0,6]
+      , tabC = V.fromList [-1,2,-1]
+      , tabZ = -2
+      , tabBasicVariables = V.fromList [0,4,5,6]
+      , tabIndependantVariables = V.fromList [3,1,2]
+      , tabAuxiliaryData = Nothing
+      }
+
+      entering = Just 1
+      leaving = Just 5
+
+  in (desc, tableau, entering, leaving)
+
+sample9 ∷ Sample
+sample9 =
+  let desc = "Lecture \"Pivoting the Auxiliary Dictionary\" (2)"
+
+      tableau = Tableau {
+        tabN = 3
+      , tabM = 4
+      , tabA = M.fromLists [ [ 1%3, -1%3,  1]
+                           , [ 1%3,  2%3, -1]
+                           , [ 1%3,  2%3, -2]
+                           , [ 0,   -1,   -2]
+                           ]
+      , tabB = V.fromList [0,2,6,6]
+      , tabC = V.fromList [-1%3,-2%3,1]
+      , tabZ = -2
+      , tabBasicVariables = V.fromList [1,0,4,6]
+      , tabIndependantVariables = V.fromList [3,5,2]
+      , tabAuxiliaryData = Nothing
+      }
+
+      entering = Just 2
+      leaving = Just 0
+
+  in (desc, tableau, entering, leaving)
+
 
 samples ∷ [Sample]
 samples =
@@ -206,6 +256,8 @@ samples =
   , sample5
   , sample6
   , sample7
+  , sample8
+  , sample9
   ]
 
 makeTestsFromSample ∷ Sample → TestTree

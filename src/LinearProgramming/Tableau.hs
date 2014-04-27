@@ -16,7 +16,7 @@ module LinearProgramming.Tableau (
 import Prelude.Unicode
 import qualified Data.Matrix as M
 import qualified Data.Vector as V
-import Data.Maybe (isJust)
+import Data.Maybe (isJust, fromJust)
 import Data.Function (on)
 import Data.Ratio
 
@@ -181,16 +181,26 @@ chooseLeavingVariable Tableau {
 , tabB = b
 , tabBasicVariables = vb
 , tabIndependantVariables = vi
+, tabAuxiliaryData = aux
 } entering =
   let Just enteringIndex = V.elemIndex entering vi
       aCol = M.getCol (enteringIndex + 1) a
       coefficients = V.zipWith3 (\i a b →
-        (i, if b ≠ 0 then Just (a ÷ b) else Nothing)) vb aCol b
-      finiteCoefficients = V.map (\(i, Just j) → (i, j)) $ V.filter (isJust ∘ snd) coefficients
-      (leavingVariable, minimalCoefficient) = V.minimumBy (compare `on` snd) finiteCoefficients
-  in if V.null finiteCoefficients ∨ minimalCoefficient ≥ 0
-      then Nothing
-      else Just leavingVariable
+        if a < 0
+        then Just (i, -b ÷ a)
+        else Nothing) vb aCol b
+      finiteCoefficients = V.map fromJust ∘ V.filter isJust $ coefficients
+      (minimalVariable, minimalCoefficient) = V.minimumBy (compare `on` snd) finiteCoefficients
+      minimalCoefficients = V.filter ((≡ minimalCoefficient) ∘ snd) finiteCoefficients
+      leavingVariable = case aux of
+          Nothing → minimalVariable
+          Just _  → case V.find ((≡ 0) ∘ fst) minimalCoefficients of
+            Nothing                     → minimalVariable
+            Just (auxiliaryVariable, _) → auxiliaryVariable
+      result = if V.null finiteCoefficients
+        then Nothing
+        else Just leavingVariable
+  in result
 
 
 generateAuxiliaryTableau ∷ Tableau → Tableau
