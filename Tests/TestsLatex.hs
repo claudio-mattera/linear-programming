@@ -32,21 +32,21 @@ testShowRational =
           let r = n % 1
               text = showRational r
               textExpected = "$" ⧺ show n ⧺ "$"
-          in (text === textExpected)
+          in (text == textExpected)
     , QC.testProperty "Positive rational" $
         \r' →
           let r = abs r'
               text = showRational r
               textExpected = "$\\frac{" ⧺ show (numerator r) ⧺ "}{" ⧺
                 show (denominator r) ⧺ "}$"
-          in (denominator r ≠ 1) ==> (text === textExpected)
+          in (denominator r ≠ 1) ==> (text == textExpected)
     , QC.testProperty "Negative rational" $
         \r' →
           let r = - (abs r')
               text = showRational r
               textExpected = "$-\\frac{" ⧺ show (- (numerator r)) ⧺ "}{" ⧺
                 show (denominator r) ⧺ "}$"
-          in (denominator r ≠ 1) ==> (text === textExpected)
+          in (denominator r ≠ 1) ==> (text == textExpected)
     ]
 
 testToLatex =
