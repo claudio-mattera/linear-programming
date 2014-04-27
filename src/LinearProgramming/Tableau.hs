@@ -54,17 +54,31 @@ instance Show Tableau where
   , tabIndependantVariables = independantVariables
   , tabAuxiliaryData = auxiliaryData
   } =
-      let t1 = M.colVector b M.<|> a
-          z' = M.fromLists [[z]]
-          t2 = z' M.<|> M.rowVector c
+      let t1 = fmap sr0 (M.colVector b) M.<|> fmap sr a
+          z' = fmap sr0 (M.fromLists [[z]])
+          t2 = z' M.<|> fmap sr0 (M.rowVector c)
           t3 = t1 M.<-> t2
           auxiliaryDataText = case auxiliaryData of
             Nothing           → ""
-            Just (auxZ, auxC) → "aux Z: " ⧺ show auxZ ⧺ ", aux C: " ⧺ show auxC
-      in "\n" ⧺ show t3 ⧺
+            Just (auxZ, auxC) → "aux Z: " ⧺ show auxZ ⧺ ", aux C: " ⧺ show (V.toList auxC)
+      in "\n" ⧺ filter (≠ '"') (show t3) ⧺
         "Basic: " ⧺ show (V.toList basicVariables) ⧺ " (m: " ⧺ show m ⧺ ")\n" ⧺
         "Indep: " ⧺ show (V.toList independantVariables) ⧺ " (n: " ⧺ show n ⧺
         ")\n" ⧺ auxiliaryDataText
+
+    where
+
+    sr ∷ Value → String
+    sr r
+      | numerator r ≡ 0     = ""
+      | denominator r ≡ 1   = show (numerator r)
+      | otherwise           = show (numerator r) ⧺ " / " ⧺ show (denominator r)
+
+    sr0 ∷ Value → String
+    sr0 r
+      | denominator r ≡ 1   = show (numerator r)
+      | otherwise           = show (numerator r) ⧺ " / " ⧺ show (denominator r)
+
 
 
 pivot ∷ Tableau → Variable → Variable → Tableau
