@@ -7,8 +7,6 @@ import Prelude.Unicode
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import qualified Data.Matrix as M
-import qualified Data.Vector as V
 import Data.Ratio
 
 import LinearProgramming.Tableau
@@ -42,82 +40,74 @@ text = "max x1 + 2 x2\n" ⧺
        "x1 + -1 x2 <= 3\n" ⧺
        "x1 <= 6\n"
 
-t0 = Tableau {
-  tabN = 2
-, tabM = 4
-, tabA = M.fromLists [ [ 3, -1]
-                     , [ 0, -1]
-                     , [-1,  1]
-                     , [-1,  0]
-                     ]
-, tabB = V.fromList [2, 11, 3, 6]
-, tabC = V.fromList [1, 2]
-, tabZ = 0
-, tabBasicVariables = V.fromList [3,4,5,6]
-, tabIndependantVariables = V.fromList [1,2]
-, tabAuxiliaryData = Nothing
-}
+t0 = makeTableau
+      2
+      4
+      [ [ 3, -1]
+      , [ 0, -1]
+      , [-1,  1]
+      , [-1,  0]
+      ]
+      [2, 11, 3, 6]
+      [1, 2]
+      0
+      [3,4,5,6]
+      [1,2]
 
 
 e0 = 2
 l0 = 3
 
 
-t1 = Tableau {
-  tabN = 2
-, tabM = 4
-, tabA = M.fromLists [ [ 3, -1]
-                     , [-3,  1]
-                     , [ 2, -1]
-                     , [-1,  0]
-                     ]
-, tabB = V.fromList [2, 9, 5, 6]
-, tabC = V.fromList [7, -2]
-, tabZ = 4
-, tabBasicVariables = V.fromList [2,4,5,6]
-, tabIndependantVariables = V.fromList [1,3]
-, tabAuxiliaryData = Nothing
-}
+t1 = makeTableau
+      2
+      4
+      [ [ 3, -1]
+      , [-3,  1]
+      , [ 2, -1]
+      , [-1,  0]
+      ]
+      [2, 9, 5, 6]
+      [7, -2]
+      4
+      [2,4,5,6]
+      [1,3]
 
 e1 = 1
 l1 = 4
 
 
-t2 = Tableau {
-  tabN = 2
-, tabM = 4
-, tabA = M.fromLists [ [-1,    0]
-                     , [-1%3,  1%3]
-                     , [-2%3, -1%3]
-                     , [ 1%3, -1%3]
-                     ]
-, tabB = V.fromList [11,3,11,3]
-, tabC = V.fromList [-7%3, 1%3]
-, tabZ = 25
-, tabBasicVariables = V.fromList [2,1,5,6]
-, tabIndependantVariables = V.fromList [4,3]
-, tabAuxiliaryData = Nothing
-}
+t2 = makeTableau
+      2
+      4
+      [ [-1,    0]
+      , [-1%3,  1%3]
+      , [-2%3, -1%3]
+      , [ 1%3, -1%3]
+      ]
+      [11,3,11,3]
+      [-7%3, 1%3]
+      25
+      [2,1,5,6]
+      [4,3]
 
 e2 = 3
 l2 = 6
 
 
-t3 = Tableau {
-  tabN = 2
-, tabM = 4
-, tabA = M.fromLists [ [-1,  0]
-                     , [ 0, -1]
-                     , [-1,  1]
-                     , [ 1, -3]
-                     ]
-, tabB = V.fromList [11,6,8,9]
-, tabC = V.fromList [-2,-1]
-, tabZ = 28
-, tabBasicVariables = V.fromList [2,1,5,3]
-, tabIndependantVariables = V.fromList [4,6]
-, tabAuxiliaryData = Nothing
-}
+t3 = makeTableau
+      2
+      4
+      [ [-1,  0]
+      , [ 0, -1]
+      , [-1,  1]
+      , [ 1, -3]
+      ]
+      [11,6,8,9]
+      [-2,-1]
+      28
+      [2,1,5,3]
+      [4,6]
 
 
 testParser =

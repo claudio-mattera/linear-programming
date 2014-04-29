@@ -151,28 +151,20 @@ computeTableau (obj, constraints) =
       m = length constraints
       slackVariables = map (+n) [1..m]
 
-      generateLine (cs, _) = V.generate n ∘ safeGet 0 ∘ negateCoefficients $ cs
+      generateLine (cs, _) = [ safeGet 0 (negateCoefficients cs) i | i ← [0..n-1] ]
 
-      a = foldl1 (M.<->) $ map (M.rowVector ∘ generateLine) constraints
+      a = map generateLine constraints ∷ [[Int]]
+      a' = map (map fromIntegral) a ∷ [[Rational]]
 
-      bs = map (\(_, bj) → bj) constraints
-      b = V.generate m (\j → bs !! j)
+      bs = map snd constraints
+      b' = fmap fromIntegral bs
 
-      c = V.generate n (safeGet 0 obj)
+      c = [ safeGet 0 obj i | i ← [0..n-1] ]
+      c' = fmap fromIntegral c
 
       z = 0
 
-  in Tableau {
-    tabM = m
-  , tabN = n
-  , tabA = fmap (\i → fromIntegral i % 1) a
-  , tabB = fmap (\i → fromIntegral i % 1) b
-  , tabC = fmap (\i → fromIntegral i % 1) c
-  , tabZ = z
-  , tabBasicVariables = V.fromList slackVariables
-  , tabIndependantVariables = V.fromList [1..n]
-  , tabAuxiliaryData = Nothing
-  }
+  in makeTableau n m a' b' c' z slackVariables [1..n]
 
   where
 

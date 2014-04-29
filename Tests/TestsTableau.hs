@@ -52,37 +52,33 @@ sample1 ∷ Sample
 sample1 =
   let desc = "Lecture \"A Complete Example\""
 
-      tInitial = Tableau {
-      tabN = 2
-    , tabM = 4
-    , tabA = M.fromLists [ [ 3, -1]
-                         , [ 0, -1]
-                         , [-1,  1]
-                         , [-1,  0]
-                         ]
-    , tabB = V.fromList [2, 11, 3, 6]
-    , tabC = V.fromList [1, 2]
-    , tabZ = 0
-    , tabBasicVariables = V.fromList [3,4,5,6]
-    , tabIndependantVariables = V.fromList [1,2]
-    , tabAuxiliaryData = Nothing
-    }
+      tInitial = makeTableau
+          2
+          4
+          [ [ 3, -1]
+          , [ 0, -1]
+          , [-1,  1]
+          , [-1,  0]
+          ]
+          [2, 11, 3, 6]
+          [1, 2]
+          0
+          [3,4,5,6]
+          [1,2]
 
-      tExpected = Tableau {
-      tabN = 2
-    , tabM = 4
-    , tabA = M.fromLists [ [ 3, -1]
-                         , [-3,  1]
-                         , [ 2, -1]
-                         , [-1,  0]
-                         ]
-    , tabB = V.fromList [2, 9, 5, 6]
-    , tabC = V.fromList [7, -2]
-    , tabZ = 4
-    , tabBasicVariables = V.fromList [2,4,5,6]
-    , tabIndependantVariables = V.fromList [1,3]
-    , tabAuxiliaryData = Nothing
-    }
+      tExpected = makeTableau
+          2
+          4
+          [ [ 3, -1]
+          , [-3,  1]
+          , [ 2, -1]
+          , [-1,  0]
+          ]
+          [2, 9, 5, 6]
+          [7, -2]
+          4
+          [2,4,5,6]
+          [1,3]
 
       entering = 2
       leaving = 3
@@ -94,35 +90,31 @@ sample2 ∷ Sample
 sample2 =
   let desc = "Lecture \"Pivoting\""
 
-      tInitial = Tableau {
-      tabN = 3
-    , tabM = 3
-    , tabA = M.fromLists [ [-2, -3, -1]
-                         , [-4, -1, -2]
-                         , [-3, -4, -2]
-                         ]
-    , tabB = V.fromList [5, 11, 8]
-    , tabC = V.fromList [5, 4, 3]
-    , tabZ = 0
-    , tabBasicVariables = V.fromList [4,5,6]
-    , tabIndependantVariables = V.fromList [1,2,3]
-    , tabAuxiliaryData = Nothing
-    }
+      tInitial = makeTableau
+          3
+          3
+          [ [-2, -3, -1]
+          , [-4, -1, -2]
+          , [-3, -4, -2]
+          ]
+          [5, 11, 8]
+          [5, 4, 3]
+          0
+          [4,5,6]
+          [1,2,3]
 
-      tExpected = Tableau {
-      tabN = 3
-    , tabM = 3
-    , tabA = M.fromLists [ [-1%2, -3%2, -1%2]
-                         , [ 2,    5,    0]
-                         , [ 3%2,  1%2, -1%2]
-                         ]
-    , tabB = V.fromList [5%2, 1, 1%2]
-    , tabC = V.fromList [-5%2, -7%2, 1%2]
-    , tabZ = 25%2
-    , tabBasicVariables = V.fromList [1,5,6]
-    , tabIndependantVariables = V.fromList [4,2,3]
-    , tabAuxiliaryData = Nothing
-    }
+      tExpected = makeTableau
+          3
+          3
+          [ [-1%2, -3%2, -1%2]
+          , [ 2,    5,    0]
+          , [ 3%2,  1%2, -1%2]
+          ]
+          [5%2, 1, 1%2]
+          [-5%2, -7%2, 1%2]
+          (25%2)
+          [1,5,6]
+          [4,2,3]
 
       entering = 1
       leaving = 4
@@ -133,37 +125,33 @@ sample3 ∷ Sample
 sample3 =
   let desc = "Lecture \"Infeasible problem example\""
 
-      tInitial = Tableau {
-      tabN = 4
-    , tabM = 4
-    , tabA = M.fromLists [ [ 1, -1,  1,  0]
-                         , [ 1,  0, -1, -1]
-                         , [ 1,  1,  0, -1]
-                         , [ 1,  0,  0,  1]
-                         ]
-    , tabB = V.fromList [5, 14, -6, -7]
-    , tabC = V.fromList [-1, 0, 0, 0]
-    , tabZ = 0
-    , tabBasicVariables = V.fromList [4,5,6,7]
-    , tabIndependantVariables = V.fromList [0,1,2,3]
-    , tabAuxiliaryData = Nothing
-    }
+      tInitial = makeTableau
+          4
+          4
+          [ [ 1, -1,  1,  0]
+          , [ 1,  0, -1, -1]
+          , [ 1,  1,  0, -1]
+          , [ 1,  0,  0,  1]
+          ]
+          [5, 14, -6, -7]
+          [-1, 0, 0, 0]
+          0
+          [4,5,6,7]
+          [0,1,2,3]
 
-      tExpected = Tableau {
-      tabN = 4
-    , tabM = 4
-    , tabA = M.fromLists [ [ 1, -1,  1, -1]
-                         , [ 1,  0, -1, -2]
-                         , [ 1,  1,  0, -2]
-                         , [ 1,  0,  0, -1]
-                         ]
-    , tabB = V.fromList [12, 21, 1, 7]
-    , tabC = V.fromList [-1, 0, 0, 1]
-    , tabZ = -7
-    , tabBasicVariables = V.fromList [4,5,6,0]
-    , tabIndependantVariables = V.fromList [7,1,2,3]
-    , tabAuxiliaryData = Nothing
-    }
+      tExpected = makeTableau
+          4
+          4
+          [ [ 1, -1,  1, -1]
+          , [ 1,  0, -1, -2]
+          , [ 1,  1,  0, -2]
+          , [ 1,  0,  0, -1]
+          ]
+          [12, 21, 1, 7]
+          [-1, 0, 0, 1]
+          (-7)
+          [4,5,6,0]
+          [7,1,2,3]
 
       entering = 0
       leaving = 7
@@ -174,37 +162,33 @@ sample4 ∷ Sample
 sample4 =
   let desc = "Lecture \"Handling Unbounded Problems\""
 
-      tInitial = Tableau {
-        tabN = 3
-      , tabM = 4
-      , tabA = M.fromLists [ [-1,  1,  0]
-                           , [ 1,  0, -1]
-                           , [ 2,  0, -1]
-                           , [ 1, -1,  0]
-                           ]
-      , tabB = V.fromList [5,6,2,4]
-      , tabC = V.fromList [2,3,-5]
-      , tabZ = 0
-      , tabBasicVariables = V.fromList [4,5,6,7]
-      , tabIndependantVariables = V.fromList [1,2,3]
-      , tabAuxiliaryData = Nothing
-      }
+      tInitial = makeTableau
+            3
+            4
+            [ [-1,  1,  0]
+            , [ 1,  0, -1]
+            , [ 2,  0, -1]
+            , [ 1, -1,  0]
+            ]
+            [5,6,2,4]
+            [2,3,-5]
+            0
+            [4,5,6,7]
+            [1,2,3]
 
-      tExpected = Tableau {
-        tabN = 3
-      , tabM = 4
-      , tabA = M.fromLists [ [ 0, -1,  0]
-                           , [ 1,  0, -1]
-                           , [ 2,  0, -1]
-                           , [ 1, -1,  0]
-                           ]
-      , tabB = V.fromList [9,6,2,4]
-      , tabC = V.fromList [5,-3,-5]
-      , tabZ = 12
-      , tabBasicVariables = V.fromList [4,5,6,2]
-      , tabIndependantVariables = V.fromList [1,7,3]
-      , tabAuxiliaryData = Nothing
-      }
+      tExpected = makeTableau
+            3
+            4
+            [ [ 0, -1,  0]
+            , [ 1,  0, -1]
+            , [ 2,  0, -1]
+            , [ 1, -1,  0]
+            ]
+            [9,6,2,4]
+            [5,-3,-5]
+            12
+            [4,5,6,2]
+            [1,7,3]
 
       entering = 2
       leaving = 7
@@ -291,24 +275,31 @@ makeTestsFromSample (desc, tInitial, tExpected, entering, leaving) =
 
 arbitraryTableau ∷ Int → Gen Tableau
 arbitraryTableau size = do
-  n ← choose (2, size)
-  m ← choose (2, size)
-  as ← vector (m*n)
-  bs ← vector m
-  cs ← vector n
-  z ← arbitrary
-  let t = Tableau {
-    tabN = n
-  , tabM = m
-  , tabA = M.fromList m n as
-  , tabB = V.fromList bs
-  , tabC = V.fromList cs
-  , tabZ = z
-  , tabBasicVariables = V.fromList [n+1 .. n+m]
-  , tabIndependantVariables = V.fromList [1..n]
-  , tabAuxiliaryData = Nothing
-  }
-  return t
+    n ← choose (2, size)
+    m ← choose (2, size)
+    as ← vector (m*n)
+    let ass = group n as
+    bs ← vector m
+    cs ← vector n
+    z ← arbitrary
+    let t = makeTableau
+              n
+              m
+              ass
+              bs
+              cs
+              z
+              [n+1 .. n+m]
+              [1..n]
+    return t
+
+  where
+
+  group :: Int → [a] → [[a]]
+  group _ [] = []
+  group n l
+    | n > 0 = (take n l) : (group n (drop n l))
+    | otherwise = error "Negative n"
 
 instance Arbitrary Tableau where
   arbitrary = sized arbitraryTableau

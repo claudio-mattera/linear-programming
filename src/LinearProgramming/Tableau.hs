@@ -4,6 +4,8 @@ module LinearProgramming.Tableau (
     Variable
   , Value
   , Tableau(..)
+  , makeTableau
+  , makeTableau'
   , pivot
   , isFeasible
   , isFinal
@@ -20,6 +22,8 @@ import qualified Data.Vector as V
 import Data.Maybe (isJust, fromJust)
 import Data.Function (on)
 import Data.Ratio
+
+import Control.Arrow ((***))
 
 {-
 NOTE: Data.Matrix indices range from (1,1) to (n,m), while Data.Vector indices
@@ -41,6 +45,24 @@ data Tableau = Tableau {
 , tabIndependantVariables ∷ V.Vector Variable
 , tabAuxiliaryData        ∷ Maybe (Value, V.Vector Value)
 } deriving Eq
+
+makeTableau ∷ Int → Int → [[Value]] → [Value] → [Value] → Value → [Variable] → [Variable] → Tableau
+makeTableau n m a b c z basicVariables independantVariables =
+  makeTableau'  n m a b c z basicVariables independantVariables Nothing
+
+makeTableau' ∷ Int → Int → [[Value]] → [Value] → [Value] → Value → [Variable] → [Variable] → Maybe (Value, [Value]) → Tableau
+makeTableau' n m a b c z basicVariables independantVariables auxiliaryData =
+  Tableau {
+    tabM = m
+  , tabN = n
+  , tabA = M.fromLists a
+  , tabB = V.fromList b
+  , tabC = V.fromList c
+  , tabZ = z
+  , tabBasicVariables = V.fromList basicVariables
+  , tabIndependantVariables = V.fromList independantVariables
+  , tabAuxiliaryData = fmap (id *** V.fromList) auxiliaryData
+}
 
 
 instance Show Tableau where

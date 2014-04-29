@@ -7,8 +7,6 @@ import Prelude.Unicode
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import qualified Data.Matrix as M
-import qualified Data.Vector as V
 import Data.Ratio
 
 import LinearProgramming.Tableau
@@ -26,57 +24,53 @@ sample1 ∷ Sample
 sample1 =
   let desc = "Lecture \"Infeasible Problem Example\""
 
-      tInitial = Tableau {
-        tabN = 3
-      , tabM = 4
-      , tabA = M.fromLists [ [-1,  1,  0]
-                           , [ 0, -1, -1]
-                           , [ 1,  0, -1]
-                           , [ 0,  0,  1]
-                           ]
-      , tabB = V.fromList [5,14,-6,-7]
-      , tabC = V.fromList [1,2,-1]
-      , tabZ = 0
-      , tabBasicVariables = V.fromList [4,5,6,7]
-      , tabIndependantVariables = V.fromList [1,2,3]
-      , tabAuxiliaryData = Nothing
-      }
+      tInitial = makeTableau
+            3
+            4
+            [ [-1,  1,  0]
+            , [ 0, -1, -1]
+            , [ 1,  0, -1]
+            , [ 0,  0,  1]
+            ]
+            [5,14,-6,-7]
+            [1,2,-1]
+            0
+            [4,5,6,7]
+            [1,2,3]
 
-      tAuxiliaryExpected = Tableau {
-        tabN = 4
-      , tabM = 4
-      , tabA = M.fromLists [ [ 1, -1,  1,  0]
-                           , [ 1,  0, -1, -1]
-                           , [ 1,  1,  0, -1]
-                           , [ 1,  0,  0,  1]
-                           ]
-      , tabB = V.fromList [5,14,-6,-7]
-      , tabC = V.fromList [-1,0,0,0]
-      , tabZ = 0
-      , tabBasicVariables = V.fromList [4,5,6,7]
-      , tabIndependantVariables = V.fromList [0,1,2,3]
-      , tabAuxiliaryData = Just (0, V.fromList [0,1,2,-1])
-      }
+      tAuxiliaryExpected = makeTableau'
+            4
+            4
+            [ [ 1, -1,  1,  0]
+            , [ 1,  0, -1, -1]
+            , [ 1,  1,  0, -1]
+            , [ 1,  0,  0,  1]
+            ]
+            [5,14,-6,-7]
+            [-1,0,0,0]
+            0
+            [4,5,6,7]
+            [0,1,2,3]
+            (Just (0, [0,1,2,-1]))
 
 
       entering = 0
       leaving = 7
 
-      tAuxiliaryInitialExpected = Tableau {
-        tabN = 4
-      , tabM = 4
-      , tabA = M.fromLists [ [ 1, -1,  1, -1]
-                           , [ 1,  0, -1, -2]
-                           , [ 1,  1,  0, -2]
-                           , [ 1,  0,  0, -1]
-                           ]
-      , tabB = V.fromList [12,21,1,7]
-      , tabC = V.fromList [-1,0,0,1]
-      , tabZ = -7
-      , tabBasicVariables = V.fromList [4,5,6,0]
-      , tabIndependantVariables = V.fromList [7,1,2,3]
-      , tabAuxiliaryData = Just (0, V.fromList [0,1,2,-1])
-      }
+      tAuxiliaryInitialExpected = makeTableau'
+            4
+            4
+            [ [ 1, -1,  1, -1]
+            , [ 1,  0, -1, -2]
+            , [ 1,  1,  0, -2]
+            , [ 1,  0,  0, -1]
+            ]
+            [12,21,1,7]
+            [-1,0,0,1]
+            (-7)
+            [4,5,6,0]
+            [7,1,2,3]
+            (Just (0, [0,1,2,-1]))
 
   in (desc, tInitial, tAuxiliaryExpected, entering, leaving, tAuxiliaryInitialExpected)
 
@@ -84,56 +78,52 @@ sample2 ∷ Sample
 sample2 =
   let desc = "Lecture \"The Auxiliary Problem\""
 
-      tInitial = Tableau {
-        tabN = 2
-      , tabM = 4
-      , tabA = M.fromLists [ [ 2, -1]
-                           , [ 0, -1]
-                           , [-1,  2]
-                           , [-1,  0]
-                           ]
-      , tabB = V.fromList [-2,4,-2,4]
-      , tabC = V.fromList [1,2]
-      , tabZ = 0
-      , tabBasicVariables = V.fromList [3,4,5,6]
-      , tabIndependantVariables = V.fromList [1,2]
-      , tabAuxiliaryData = Nothing
-      }
+      tInitial = makeTableau
+            2
+            4
+            [ [ 2, -1]
+            , [ 0, -1]
+            , [-1,  2]
+            , [-1,  0]
+            ]
+            [-2,4,-2,4]
+            [1,2]
+            0
+            [3,4,5,6]
+            [1,2]
 
-      tAuxiliaryExpected = Tableau {
-        tabN = 3
-      , tabM = 4
-      , tabA = M.fromLists [ [ 1,  2, -1]
-                           , [ 1,  0, -1]
-                           , [ 1, -1,  2]
-                           , [ 1, -1,  0]
-                           ]
-      , tabB = V.fromList [-2,4,-2,4]
-      , tabC = V.fromList [-1,0,0]
-      , tabZ = 0
-      , tabBasicVariables = V.fromList [3,4,5,6]
-      , tabIndependantVariables = V.fromList [0,1,2]
-      , tabAuxiliaryData = Just (0, V.fromList [0,1,2])
-      }
+      tAuxiliaryExpected = makeTableau'
+            3
+            4
+            [ [ 1,  2, -1]
+            , [ 1,  0, -1]
+            , [ 1, -1,  2]
+            , [ 1, -1,  0]
+            ]
+            [-2,4,-2,4]
+            [-1,0,0]
+            0
+            [3,4,5,6]
+            [0,1,2]
+            (Just (0, [0,1,2]))
 
       entering = 0
       leaving = 3
 
-      tAuxiliaryInitialExpected = Tableau {
-        tabN = 3
-      , tabM = 4
-      , tabA = M.fromLists [ [ 1, -2,  1]
-                           , [ 1, -2,  0]
-                           , [ 1, -3,  3]
-                           , [ 1, -3,  1]
-                           ]
-      , tabB = V.fromList [2,6,0,6]
-      , tabC = V.fromList [-1,2,-1]
-      , tabZ = -2
-      , tabBasicVariables = V.fromList [0,4,5,6]
-      , tabIndependantVariables = V.fromList [3,1,2]
-      , tabAuxiliaryData = Just (0, V.fromList [0,1,2])
-      }
+      tAuxiliaryInitialExpected = makeTableau'
+            3
+            4
+            [ [ 1, -2,  1]
+            , [ 1, -2,  0]
+            , [ 1, -3,  3]
+            , [ 1, -3,  1]
+            ]
+            [2,6,0,6]
+            [-1,2,-1]
+            (-2)
+            [0,4,5,6]
+            [3,1,2]
+            (Just (0, [0,1,2]))
 
   in (desc, tInitial, tAuxiliaryExpected, entering, leaving, tAuxiliaryInitialExpected)
 
@@ -203,107 +193,99 @@ completeExample =
       in t @?= tf
 
 
-  t0 = Tableau {
-    tabN = 2
-  , tabM = 4
-  , tabA = M.fromLists [ [ 2, -1]
-                       , [ 0, -1]
-                       , [-1,  2]
-                       , [-1,  0]
-                       ]
-  , tabB = V.fromList [-2,4,-2,4]
-  , tabC = V.fromList [1,2]
-  , tabZ = 0
-  , tabBasicVariables = V.fromList [3,4,5,6]
-  , tabIndependantVariables = V.fromList [1,2]
-  , tabAuxiliaryData = Nothing
-  }
+  t0 = makeTableau
+        2
+        4
+        [ [ 2, -1]
+        , [ 0, -1]
+        , [-1,  2]
+        , [-1,  0]
+        ]
+        [-2,4,-2,4]
+        [1,2]
+        0
+        [3,4,5,6]
+        [1,2]
 
-  tAux0 = Tableau {
-    tabN = 3
-  , tabM = 4
-  , tabA = M.fromLists [ [ 1,  2, -1]
-                       , [ 1,  0, -1]
-                       , [ 1, -1,  2]
-                       , [ 1, -1,  0]
-                       ]
-  , tabB = V.fromList [-2,4,-2,4]
-  , tabC = V.fromList [-1,0,0]
-  , tabZ = 0
-  , tabBasicVariables = V.fromList [3,4,5,6]
-  , tabIndependantVariables = V.fromList [0,1,2]
-  , tabAuxiliaryData = Just (0, V.fromList [0,1,2])
-  }
+  tAux0 = makeTableau'
+        3
+        4
+        [ [ 1,  2, -1]
+        , [ 1,  0, -1]
+        , [ 1, -1,  2]
+        , [ 1, -1,  0]
+        ]
+        [-2,4,-2,4]
+        [-1,0,0]
+        0
+        [3,4,5,6]
+        [0,1,2]
+        (Just (0, [0,1,2]))
 
   e0 = 0
   l0 = 3
 
-  tAux1 = Tableau {
-    tabN = 3
-  , tabM = 4
-  , tabA = M.fromLists [ [ 1, -2,  1]
-                       , [ 1, -2,  0]
-                       , [ 1, -3,  3]
-                       , [ 1, -3,  1]
-                       ]
-  , tabB = V.fromList [2,6,0,6]
-  , tabC = V.fromList [-1,2,-1]
-  , tabZ = -2
-  , tabBasicVariables = V.fromList [0,4,5,6]
-  , tabIndependantVariables = V.fromList [3,1,2]
-  , tabAuxiliaryData = Just (0, V.fromList [0,1,2])
-  }
+  tAux1 = makeTableau'
+        3
+        4
+        [ [ 1, -2,  1]
+        , [ 1, -2,  0]
+        , [ 1, -3,  3]
+        , [ 1, -3,  1]
+        ]
+        [2,6,0,6]
+        [-1,2,-1]
+        (-2)
+        [0,4,5,6]
+        [3,1,2]
+        (Just (0, [0,1,2]))
 
   e1 = 1
   l1 = 5
 
-  tAux2 = Tableau {
-    tabN = 3
-  , tabM = 4
-  , tabA = M.fromLists [ [ 1%3,  2%3, -1]
-                       , [ 1%3,  2%3, -2]
-                       , [ 1%3, -1%3,  1]
-                       , [ 0,    1,   -2]
-                       ]
-  , tabB = V.fromList [2,6,0,6]
-  , tabC = V.fromList [-1%3,-2%3,1]
-  , tabZ = -2
-  , tabBasicVariables = V.fromList [0,4,1,6]
-  , tabIndependantVariables = V.fromList [3,5,2]
-  , tabAuxiliaryData = Just (0, V.fromList [1%3,-1%3,3%1])
-  }
+  tAux2 = makeTableau'
+        3
+        4
+        [ [ 1%3,  2%3, -1]
+        , [ 1%3,  2%3, -2]
+        , [ 1%3, -1%3,  1]
+        , [ 0,    1,   -2]
+        ]
+        [2,6,0,6]
+        [-1%3,-2%3,1]
+        (-2)
+        [0,4,1,6]
+        [3,5,2]
+        (Just (0, [1%3,-1%3,3%1]))
 
   e2 = 2
   l2 = 0
 
-  tAux3 = Tableau {
-    tabN = 3
-  , tabM = 4
-  , tabA = M.fromLists [ [ 1%3,  2%3, -1]
-                       , [-1%3, -2%3,  2]
-                       , [ 2%3,  1%3, -1]
-                       , [-2%3, -1%3,  2]
-                       ]
-  , tabB = V.fromList [2,2,2,2]
-  , tabC = V.fromList [0,0,-1]
-  , tabZ = 0
-  , tabBasicVariables = V.fromList [2,4,1,6]
-  , tabIndependantVariables = V.fromList [3,5,0]
-  , tabAuxiliaryData = Just (6, V.fromList [4%3, 5%3, -3])
-  }
+  tAux3 = makeTableau'
+        3
+        4
+        [ [ 1%3,  2%3, -1]
+        , [-1%3, -2%3,  2]
+        , [ 2%3,  1%3, -1]
+        , [-2%3, -1%3,  2]
+        ]
+        [2,2,2,2]
+        [0,0,-1]
+        0
+        [2,4,1,6]
+        [3,5,0]
+        (Just (6, [4%3, 5%3, -3]))
 
-  tf = Tableau {
-    tabN = 2
-  , tabM = 4
-  , tabA = M.fromLists [ [ 1%3,  2%3]
-                       , [-1%3, -2%3]
-                       , [ 2%3,  1%3]
-                       , [-2%3, -1%3]
-                       ]
-  , tabB = V.fromList [2,2,2,2]
-  , tabC = V.fromList [4%3, 5%3]
-  , tabZ = 6
-  , tabBasicVariables = V.fromList [2,4,1,6]
-  , tabIndependantVariables = V.fromList [3,5]
-  , tabAuxiliaryData = Nothing
-  }
+  tf = makeTableau
+        2
+        4
+        [ [ 1%3,  2%3]
+        , [-1%3, -2%3]
+        , [ 2%3,  1%3]
+        , [-2%3, -1%3]
+        ]
+        [2,2,2,2]
+        [4%3, 5%3]
+        6
+        [2,4,1,6]
+        [3,5]

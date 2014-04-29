@@ -10,8 +10,6 @@ import Test.Tasty.HUnit
 
 import Test.QuickCheck
 
-import qualified Data.Matrix as M
-import qualified Data.Vector as V
 import Data.Ratio
 import Data.Foldable
 
@@ -51,20 +49,18 @@ testShowRational =
 
 testToLatex =
   testCase "Tableau to Latex" $
-    let tableau = Tableau {
-      tabN = 6
-    , tabM = 3
-    , tabA = M.fromLists [ [8%5,0,0,1,0,-1%5]
-                         , [16%5,0,1,0,1,-2%5]
-                         , [2%5,1,1,0,0,1%5]
-                         ]
-    , tabB = V.fromList [8,16,6]
-    , tabC = V.fromList [-1%5,0,3,0,0,2%5]
-    , tabZ = 12
-    , tabBasicVariables = V.fromList [4,5,6]
-    , tabIndependantVariables = V.fromList [1,2,3]
-    , tabAuxiliaryData = Nothing
-    }
+    let tableau = makeTableau
+          6
+          3
+          [ [8%5,0,0,1,0,-1%5]
+          , [16%5,0,1,0,1,-2%5]
+          , [2%5,1,1,0,0,1%5]
+          ]
+          [8,16,6]
+          [-1%5,0,3,0,0,2%5]
+          12
+          [4,5,6]
+          [1,2,3]
 
         textExpected =
           "\\begin{tabular}{c|cccccc}\n" ⧺
