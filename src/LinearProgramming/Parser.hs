@@ -13,6 +13,7 @@
 
 module LinearProgramming.Parser (
     parseTableau
+  , parseDirectTableau
   , parseProblem
   ) where
 
@@ -56,25 +57,19 @@ objectiveLine = do
 constraintLine = do
   e ← expression <* whitespaces
   r ← relationSymbol <* whitespaces
-  n ← number
+  n ← integer
   return (e, r, n)
 
 expression ∷ Parsec String () [(Int, Int)]
 expression = between whitespaces whitespaces addend `sepBy1` string "+"
 
 addend = do
-  coefficient ← option 1 (number <* optional (char '*')) <* whitespaces
+  coefficient ← option 1 (integer <* optional (char '*')) <* whitespaces
   v ← variable
   return (v, coefficient)
 
 variable ∷ Parsec String () Int
 variable = read <$> (char 'x' *> many1 digit)
-
-number ∷ Parsec String () Int
-number = do
-  coefficient ← option 1 (char '-' *> return (-1))
-  ds ← many1 digit
-  return (coefficient ⋅ read ds)
 
 
 relationSymbol ∷ Parsec String () Relation
@@ -84,3 +79,47 @@ relationSymbol =
 
 whitespace = oneOf " \t"
 whitespaces = many whitespace
+
+
+
+integer ∷ Parsec String () Int
+integer = do
+  coefficient ← option 1 (char '-' *> return (-1))
+  ds ← many1 digit
+  return (coefficient ⋅ read ds)
+
+-- Parses '123.456' as '123456 % 100'.
+real ∷ Parsec String () Rational
+real = do
+  coefficient ← option 1 (char '-' *> return (-1))
+  ds1 ← many1 digit
+  char '.'
+  ds2 ← many1 digit
+  let ts = takeWhile (≠ '0') ds2
+      k = fromIntegral (length ts)
+      den = 10 ^^ k
+      ds = ds1 ⧺ ts
+      num = read ds ∷ Integer
+  return (coefficient ⋅ fromIntegral num / den)
+
+matrix m = count m (listOfReals <* newline)
+
+listOf field = field `sepEndBy` whitespaces
+listOfReals = listOf real
+listOfIntegers = listOf integer
+
+-- | Parses a 'Tableau' from a 'String'.
+parseDirectTableau ∷ String → Either ParseError Tableau
+parseDirectTableau text = parse parserDirectTableau "" text
+
+parserDirectTableau = do
+  many newline
+  m ← integer <* whitespaces
+  n ← integer <* newline
+  vbs ← listOfIntegers <* newline
+  vis ← listOfIntegers <* newline
+  bs ← listOfReals <* newline
+  ass ← matrix m
+  z:cs ← listOfReals <* many newline
+  eof
+  return $ makeTableau n m ass bs cs z vbs vis
