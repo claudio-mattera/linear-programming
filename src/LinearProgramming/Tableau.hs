@@ -46,11 +46,13 @@ data Tableau = Tableau {
 , tabAuxiliaryData        ∷ Maybe (Value, V.Vector Value)
 } deriving Eq
 
-makeTableau ∷ Int → Int → [[Value]] → [Value] → [Value] → Value → [Variable] → [Variable] → Tableau
+makeTableau ∷ Int → Int → [[Value]] → [Value] → [Value] → Value →
+                [Variable] → [Variable] → Tableau
 makeTableau n m a b c z basicVariables independantVariables =
   makeTableau'  n m a b c z basicVariables independantVariables Nothing
 
-makeTableau' ∷ Int → Int → [[Value]] → [Value] → [Value] → Value → [Variable] → [Variable] → Maybe (Value, [Value]) → Tableau
+makeTableau' ∷ Int → Int → [[Value]] → [Value] → [Value] → Value →
+                [Variable] → [Variable] → Maybe (Value, [Value]) → Tableau
 makeTableau' n m a b c z basicVariables independantVariables auxiliaryData =
   Tableau {
     tabM = m
@@ -77,19 +79,28 @@ instance Show Tableau where
   , tabIndependantVariables = independantVariables
   , tabAuxiliaryData = auxiliaryData
   } =
-      let t1 = fmap sr0 (M.colVector b) M.<|> foldl (\acc colNo → M.mapCol (addVar colNo) colNo acc) (fmap sr a) [1..n]
-          z' = fmap sr0 (M.fromLists [[z]])
-          t2 = z' M.<|> foldl (\acc colNo → M.mapCol (addVar colNo) colNo acc) (fmap sr (M.rowVector c)) [1..n]
+      let t1 = fmap showKeepZero (M.colVector b) M.<|> showMatrix a
+          z' = fmap showKeepZero (M.fromLists [[z]])
+          t2 = z' M.<|> showMatrix (M.rowVector c)
           t3 = t1 M.<-> t2
-          t4 = M.colVector (V.generate m (\k → "x" ⧺ show (basicVariables V.! k))) M.<-> M.rowVector (V.singleton "z")
+          basicVars = V.generate m (\k → "x" ⧺ show (basicVariables V.! k))
+          t4 = M.colVector basicVars M.<-> M.rowVector (V.singleton "z")
           t5 = fmap (⧺ " = ") t4 M.<|> t3
           auxiliaryDataRow = case auxiliaryData of
             Nothing           → M.fromList 0 (n+2) []
-            Just (auxZ, auxC) → M.fromLists [["aux Z = ", sr0 auxZ] ⧺ (V.toList ∘ M.getRow 1) (foldl (\acc colNo → M.mapCol (addVar colNo) colNo acc) (fmap sr0 (M.rowVector auxC)) [1..n])]
+            Just (auxZ, auxC) → M.fromLists [["aux Z = ", showKeepZero auxZ] ⧺
+                (V.toList ∘ M.getRow 1) (showMatrix (M.rowVector auxC))]
           t6 = t5 M.<-> auxiliaryDataRow
       in "\n" ⧺ filter (≠ '"') (show t6)
 
     where
+
+    showMatrix ∷ M.Matrix Value → M.Matrix String
+    showMatrix matrix =
+      foldl
+        (\acc colNo → M.mapCol (addVar colNo) colNo acc)
+        (fmap showEmptyZero matrix)
+        [1 .. M.ncols matrix]
 
     addVar ∷ Int → Int → String → String
     addVar _ _ [] = []
@@ -99,14 +110,14 @@ instance Show Tableau where
         then " x" ⧺ show v ⧺ " "
         else " " ⧺ xs ⧺ " x" ⧺ show v ⧺ " "
 
-    sr ∷ Value → String
-    sr r
+    showEmptyZero ∷ Value → String
+    showEmptyZero r
       | numerator r ≡ 0     = ""
       | denominator r ≡ 1   = show (numerator r)
       | otherwise           = show (numerator r) ⧺ "/" ⧺ show (denominator r)
 
-    sr0 ∷ Value → String
-    sr0 r
+    showKeepZero ∷ Value → String
+    showKeepZero r
       | denominator r ≡ 1   = show (numerator r)
       | otherwise           = show (numerator r) ⧺ "/" ⧺ show (denominator r)
 
@@ -192,7 +203,8 @@ isFinal Tableau {tabC = c} = V.all (≤ 0) c
 chooseEnteringVariable ∷ Tableau → Maybe Variable
 chooseEnteringVariable Tableau {tabC = c, tabIndependantVariables = v} =
   let csWithIndex = V.zip v c
-      (largestVariable, largestValue) = V.maximumBy (compare `on` snd) csWithIndex
+      (largestVariable, largestValue) =
+        V.maximumBy (compare `on` snd) csWithIndex
   in if largestValue ≥ 0
       then Just largestVariable
       else Nothing
@@ -213,8 +225,10 @@ chooseLeavingVariable Tableau {
         then Just (j, -bj ÷ aji)
         else Nothing) vb aCol b
       finiteCoefficients = V.map fromJust ∘ V.filter isJust $ coefficients
-      (minimalVariable, minimalCoefficient) = V.minimumBy (compare `on` snd) finiteCoefficients
-      minimalCoefficients = V.filter ((≡ minimalCoefficient) ∘ snd) finiteCoefficients
+      (minimalVariable, minimalCoefficient) =
+        V.minimumBy (compare `on` snd) finiteCoefficients
+      minimalCoefficients =
+        V.filter ((≡ minimalCoefficient) ∘ snd) finiteCoefficients
       leavingVariable = case aux of
           Nothing → minimalVariable
           Just _  → case V.find ((≡ 0) ∘ fst) minimalCoefficients of
@@ -270,15 +284,15 @@ toOriginalTableau Tableau {
   , tabN = n
   , tabA = a
   , tabB = b
-  , tabBasicVariables = basicVariables
-  , tabIndependantVariables = independantVariables
+  , tabBasicVariables = vb
+  , tabIndependantVariables = vi
   , tabAuxiliaryData = Just (z, c)
   } = do
-    i0 ← V.elemIndex 0 independantVariables
+    i0 ← V.elemIndex 0 vi
     let a' = M.submatrix 1 m 1 i0 a M.<|> M.submatrix 1 m (i0 + 2) n a
         c' = V.take i0 c V.++ V.drop (i0 + 1) c
-        independantVariables' =
-          V.take i0 independantVariables V.++ V.drop (i0 + 1) independantVariables
+        vi' =
+          V.take i0 vi V.++ V.drop (i0 + 1) vi
     Just Tableau {
       tabM = m
     , tabN = n - 1
@@ -286,7 +300,7 @@ toOriginalTableau Tableau {
     , tabB = b
     , tabC = c'
     , tabZ = z
-    , tabBasicVariables = basicVariables
-    , tabIndependantVariables = independantVariables'
+    , tabBasicVariables = vb
+    , tabIndependantVariables = vi'
     , tabAuxiliaryData = Nothing
   }

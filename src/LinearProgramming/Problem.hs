@@ -84,15 +84,15 @@ data ObjFuncType = Maximize
                  deriving (Show, Eq)
 
 -- | The value of a coefficient.
-type Coefficient = (Int, Int)
+type Coefficient = (Int, Value)
 
 -- | A constraint is a linear combination of the problem's variable in relation
 --   to a value.
-type Constraint = ([Coefficient], Relation, Int)
+type Constraint = ([Coefficient], Relation, Value)
 
 -- | A canonical constraint is a linear combination of the problem's variable
 --   lesser or equal a value.
-type CanonicalConstraint = ([Coefficient], Int)
+type CanonicalConstraint = ([Coefficient], Value)
 
 
 instance Read Relation where
@@ -147,21 +147,13 @@ computeTableau (obj, constraints) =
       n = maximum (map toVariableIndex constraints)
       m = length constraints
       slackVariables = map (+n) [1..m]
-
       generateLine (cs, _) = [ safeGet 0 (negateCoefficients cs) i | i ← [0..n-1] ]
-
-      a = map generateLine constraints ∷ [[Int]]
-      a' = map (map fromIntegral) a ∷ [[Rational]]
-
-      bs = map snd constraints
-      b' = fmap fromIntegral bs
-
+      a = map generateLine constraints
+      b = map snd constraints
       c = [ safeGet 0 obj i | i ← [0..n-1] ]
-      c' = fmap fromIntegral c
-
       z = 0
 
-  in makeTableau n m a' b' c' z slackVariables [1..n]
+  in makeTableau n m a b c z slackVariables [1..n]
 
   where
 

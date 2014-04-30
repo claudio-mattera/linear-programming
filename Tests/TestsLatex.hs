@@ -15,37 +15,37 @@ import LinearProgramming.Latex
 
 tests ∷ TestTree
 tests = testGroup "Latex"
-          [ testShowRational
-          , testToLatex
+          [ testRationalToLatex
+          , testTableauToLatex
           ]
 
-testShowRational ∷ TestTree
-testShowRational =
+testRationalToLatex ∷ TestTree
+testRationalToLatex =
   testGroup "Rational to Latex" $
     [ QC.testProperty "Whole number" $
         \n →
           let r = n % 1
-              text = showRational r
+              text = rationalToLatex r
               textExpected = "$" ⧺ show n ⧺ "$"
           in (text == textExpected)
     , QC.testProperty "Positive rational" $
         \r' →
           let r = abs r'
-              text = showRational r
+              text = rationalToLatex r
               textExpected = "$\\frac{" ⧺ show (numerator r) ⧺ "}{" ⧺
                 show (denominator r) ⧺ "}$"
           in (denominator r ≠ 1) ==> (text == textExpected)
     , QC.testProperty "Negative rational" $
         \r' →
           let r = - (abs r')
-              text = showRational r
+              text = rationalToLatex r
               textExpected = "$-\\frac{" ⧺ show (- (numerator r)) ⧺ "}{" ⧺
                 show (denominator r) ⧺ "}$"
           in (denominator r ≠ 1) ==> (text == textExpected)
     ]
 
-testToLatex ∷ TestTree
-testToLatex =
+testTableauToLatex ∷ TestTree
+testTableauToLatex =
   testCase "Tableau to Latex" $
     let tableau = makeTableau
           6
@@ -69,6 +69,6 @@ testToLatex =
           "$12$ & $-\\frac{1}{5}$ & $0$ & $3$ & $0$ & $0$ & $\\frac{2}{5}$\\\\\n" ⧺
           "\\end{tabular}"
 
-        text = toLatex tableau
+        text = tableauToLatex tableau
 
     in text @?= textExpected

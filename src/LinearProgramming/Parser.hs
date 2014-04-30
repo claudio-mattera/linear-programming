@@ -1,6 +1,7 @@
 {-# LANGUAGE UnicodeSyntax #-}
 
-{- | A parser to read LP problems in textual representation.
+{- | A parser to read LP problems in textual representation. The input can
+     be in human readable mathematical form ('parseProblem', 'parseTableau'):
 
     > max x1 + 2 * x2
     >
@@ -8,6 +9,30 @@
     > x2 <= 11
     > x1 - x2 >= 3
     > x1 <= 6
+
+    or a direct representation of a tableau ('parseDirectTableau'):
+
+    > 3 4
+    > 1 3 6
+    > 2 4 5 7
+    > 1.5 3.0 0.0
+    > 0.0 0.0 -1.0 -2.0
+    > 1.0 -1.0 0.0 -1.0
+    > -1.0 0.9 -2.0 0.0
+    > 1.0 -1.0  2.0 3.0 1.0
+
+    which must follow this format:
+
+    > m n
+    > basic variables indices (m values)
+    > independent variables indices (n values)
+    > b coefficients (m values)
+    > 1st row of matrix A (n values)
+    > 2nd row of matrix A (n values)
+    > ...
+    > mth row of matrix A (n values)
+    > z and c coefficients (1 + n values)
+
 
 -}
 
@@ -34,13 +59,17 @@ parseTableau ∷ String → Either ParseError Tableau
 parseTableau text =
   parseProblem text >>= (return ∘ computeTableau ∘ makeCanonical)
 
-
 -- | Parses a 'Problem' from a 'String'.
 parseProblem ∷ String → Either ParseError Problem
-parseProblem = parse parser ""
+parseProblem = parse problem ""
 
-parser ∷ Parsec String () Problem
-parser = do
+-- | Parses a 'Tableau' from a 'String'.
+parseDirectTableau ∷ String → Either ParseError Tableau
+parseDirectTableau = parse directTableau ""
+
+
+problem ∷ Parsec String () Problem
+problem = do
   skipMany newline
   (objType, obj) ← objectiveLine
   skipMany1 newline
@@ -59,26 +88,24 @@ constraintLine ∷ Parsec String () Constraint
 constraintLine = do
   e ← expression <* whitespaces
   r ← relationSymbol <* whitespaces
-  n ← integer
+  n ← number
   return (e, r, n)
 
-expression ∷ Parsec String () [(Int, Int)]
+expression ∷ Parsec String () [Coefficient]
 expression = between whitespaces whitespaces addend `sepBy1` string "+"
 
 addend ∷ Parsec String () Coefficient
 addend = do
-  coefficient ← option 1 (integer <* optional (char '*')) <* whitespaces
+  coefficient ← option 1 (number <* optional (char '*')) <* whitespaces
   v ← variable
   return (v, coefficient)
 
 variable ∷ Parsec String () Int
 variable = read <$> (char 'x' *> many1 digit)
 
-
 relationSymbol ∷ Parsec String () Relation
 relationSymbol =
   read <$> (string "=" <|> string "<=" <|> string ">=")
-
 
 whitespace ∷ Parsec String () Char
 whitespace = oneOf " \t"
@@ -86,7 +113,8 @@ whitespace = oneOf " \t"
 whitespaces ∷ Parsec String () String
 whitespaces = many whitespace
 
-
+number ∷ Parsec String () Rational
+number = try rational <|> (integer >>= return ∘ fromIntegral)
 
 integer ∷ Parsec String () Int
 integer = do
@@ -95,44 +123,40 @@ integer = do
   return (coefficient ⋅ read ds)
 
 -- Parses '123.456' as '123456 % 100'.
-real ∷ Parsec String () Rational
-real = do
+rational ∷ Parsec String () Rational
+rational = do
   coefficient ← option 1 (char '-' *> return (-1))
   ds1 ← many1 digit
   _ ← char '.'
   ds2 ← many1 digit
   let ts = takeWhile (≠ '0') ds2
       k = fromIntegral (length ts)
-      den = 10 ^^ k
-      ds = ds1 ⧺ ts
-      num = read ds ∷ Integer
-  return (coefficient ⋅ fromIntegral num / den)
+      den = 10 ^^ k ∷ Rational
+      ds = dropWhile (≡ '0') ds1 ⧺ ts
+      num = read ds ∷ Rational
+  return (coefficient ⋅ num / den)
 
-matrix ∷ Int → Parsec String () [[Rational]]
-matrix m = count m (listOfReals <* newline)
+matrixOfNumbers ∷ Int → Parsec String () [[Rational]]
+matrixOfNumbers m = count m (listOfNumbers <* newline)
 
 listOf ∷ Parsec String () a → Parsec String () [a]
 listOf field = field `sepEndBy` whitespaces
 
-listOfReals ∷ Parsec String () [Rational]
-listOfReals = listOf real
+listOfNumbers ∷ Parsec String () [Rational]
+listOfNumbers = listOf number
 
 listOfIntegers ∷ Parsec String () [Int]
 listOfIntegers = listOf integer
 
--- | Parses a 'Tableau' from a 'String'.
-parseDirectTableau ∷ String → Either ParseError Tableau
-parseDirectTableau = parse parserDirectTableau ""
-
-parserDirectTableau ∷ Parsec String () Tableau
-parserDirectTableau = do
+directTableau ∷ Parsec String () Tableau
+directTableau = do
   skipMany newline
   m ← integer <* whitespaces
   n ← integer <* newline
   vbs ← listOfIntegers <* newline
   vis ← listOfIntegers <* newline
-  bs ← listOfReals <* newline
-  ass ← matrix m
-  z:cs ← listOfReals <* many newline
+  bs ← listOfNumbers <* newline
+  ass ← matrixOfNumbers m
+  z:cs ← listOfNumbers <* many newline
   eof
   return $ makeTableau n m ass bs cs z vbs vis

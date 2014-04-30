@@ -4,8 +4,8 @@
 -}
 
 module LinearProgramming.Latex (
-    toLatex
-  , showRational
+    tableauToLatex
+  , rationalToLatex
   ) where
 
 import LinearProgramming.Tableau
@@ -16,14 +16,12 @@ import qualified Data.Matrix as M
 import qualified Data.Vector as V
 import Data.Ratio
 
-type ShowFunction = Value → String
-
 -- | Generates a Latex string that represents the rational number @r@.
 --
 --   It generates the most compact representation, depending whether @r@ is
 --   integer, rational, positive or negative.
-showRational ∷ ShowFunction
-showRational r
+rationalToLatex ∷ Value → String
+rationalToLatex r
   | denominator r ≡ 1   = "$" ⧺ show (numerator r) ⧺ "$"
   | numerator r < 1     = "$-\\frac{" ⧺ show (abs (numerator r)) ⧺
                           "}{" ⧺ show (denominator r) ⧺ "}$"
@@ -35,8 +33,8 @@ showRational r
 --
 --   It uses the @tabular@ environment to draw the typical mathematical
 --   representation of a LP tableau.
-toLatex ∷ Tableau → String
-toLatex Tableau {
+tableauToLatex ∷ Tableau → String
+tableauToLatex Tableau {
     tabM = m
   , tabN = n
   , tabA = a
@@ -46,17 +44,17 @@ toLatex Tableau {
   } =
     let rowsIndices = [0..m-1]
         rows = Prelude.map writeLine rowsIndices
-        last_row = showRational z ⧺ " & " ⧺
-          V.foldl1 (\acc x → acc ⧺ " & " ⧺ x) (V.map showRational c)
+        lastRow = rationalToLatex z ⧺ " & " ⧺
+          V.foldl1 (\acc x → acc ⧺ " & " ⧺ x) (V.map rationalToLatex c)
     in  "\\begin{tabular}{c|" ⧺ Prelude.replicate n 'c' ⧺ "}\n" ⧺
         Prelude.concat rows ⧺
         "\\hline\n" ⧺
-        last_row ⧺ "\\\\\n" ⧺
+        lastRow ⧺ "\\\\\n" ⧺
         "\\end{tabular}"
   where
     writeLine i =
       let f acc x = acc ⧺ " & " ⧺ x
           bi = b V.! i
           asn = M.getRow (i+1) a
-          as = V.foldl1 f (V.map showRational asn)
-      in showRational bi ⧺ " & " ⧺ as ⧺ "\\\\\n"
+          as = V.foldl1 f (V.map rationalToLatex asn)
+      in rationalToLatex bi ⧺ " & " ⧺ as ⧺ "\\\\\n"
