@@ -2,8 +2,6 @@
 
 module TestsAuxiliaryTableau (tests) where
 
-import Prelude.Unicode
-
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -154,7 +152,7 @@ makeTestsFromSample (desc, tInitial, tAuxiliaryExpected, entering, leaving, tAux
       tAuxiliaryInitial @?= tAuxiliaryInitialExpected
 
 
-
+completeExample ∷ TestTree
 completeExample =
   -- Note: In the video lecture there are few errors. These tableaus are correct.
   testGroup "Complete example from \"Pivoting the Auxiliary Dictionary\"" $

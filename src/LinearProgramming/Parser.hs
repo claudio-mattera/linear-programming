@@ -21,7 +21,7 @@ import Prelude.Unicode
 
 import Text.Parsec
 
-import Control.Applicative ((<*>), (<*), (*>), (<$>), liftA2)
+import Control.Applicative ((<*), (*>), (<$>))
 
 import LinearProgramming.Tableau
 import LinearProgramming.Problem
@@ -37,23 +37,25 @@ parseTableau text =
 
 -- | Parses a 'Problem' from a 'String'.
 parseProblem ∷ String → Either ParseError Problem
-parseProblem text = parse parser "" text
+parseProblem = parse parser ""
 
-
+parser ∷ Parsec String () Problem
 parser = do
-  many newline
+  skipMany newline
   (objType, obj) ← objectiveLine
-  many1 newline
+  skipMany1 newline
   cs ← constraintLine `sepEndBy` many1 newline
-  many newline
+  skipMany newline
   eof
   return (objType, obj, cs)
 
+objectiveLine ∷ Parsec String () (ObjFuncType, [Coefficient])
 objectiveLine = do
   f ← try (string "max") <|> string "min"
   e ← many1 whitespace *> expression
   return (if f ≡ "min" then Minimize else Maximize, e)
 
+constraintLine ∷ Parsec String () Constraint
 constraintLine = do
   e ← expression <* whitespaces
   r ← relationSymbol <* whitespaces
@@ -63,6 +65,7 @@ constraintLine = do
 expression ∷ Parsec String () [(Int, Int)]
 expression = between whitespaces whitespaces addend `sepBy1` string "+"
 
+addend ∷ Parsec String () Coefficient
 addend = do
   coefficient ← option 1 (integer <* optional (char '*')) <* whitespaces
   v ← variable
@@ -77,7 +80,10 @@ relationSymbol =
   read <$> (string "=" <|> string "<=" <|> string ">=")
 
 
+whitespace ∷ Parsec String () Char
 whitespace = oneOf " \t"
+
+whitespaces ∷ Parsec String () String
 whitespaces = many whitespace
 
 
@@ -93,7 +99,7 @@ real ∷ Parsec String () Rational
 real = do
   coefficient ← option 1 (char '-' *> return (-1))
   ds1 ← many1 digit
-  char '.'
+  _ ← char '.'
   ds2 ← many1 digit
   let ts = takeWhile (≠ '0') ds2
       k = fromIntegral (length ts)
@@ -102,18 +108,25 @@ real = do
       num = read ds ∷ Integer
   return (coefficient ⋅ fromIntegral num / den)
 
+matrix ∷ Int → Parsec String () [[Rational]]
 matrix m = count m (listOfReals <* newline)
 
+listOf ∷ Parsec String () a → Parsec String () [a]
 listOf field = field `sepEndBy` whitespaces
+
+listOfReals ∷ Parsec String () [Rational]
 listOfReals = listOf real
+
+listOfIntegers ∷ Parsec String () [Int]
 listOfIntegers = listOf integer
 
 -- | Parses a 'Tableau' from a 'String'.
 parseDirectTableau ∷ String → Either ParseError Tableau
-parseDirectTableau text = parse parserDirectTableau "" text
+parseDirectTableau = parse parserDirectTableau ""
 
+parserDirectTableau ∷ Parsec String () Tableau
 parserDirectTableau = do
-  many newline
+  skipMany newline
   m ← integer <* whitespaces
   n ← integer <* newline
   vbs ← listOfIntegers <* newline

@@ -23,7 +23,7 @@ import Data.Maybe (isJust, fromJust)
 import Data.Function (on)
 import Data.Ratio
 
-import Control.Arrow ((***))
+import Control.Arrow (second)
 
 {-
 NOTE: Data.Matrix indices range from (1,1) to (n,m), while Data.Vector indices
@@ -61,7 +61,7 @@ makeTableau' n m a b c z basicVariables independantVariables auxiliaryData =
   , tabZ = z
   , tabBasicVariables = V.fromList basicVariables
   , tabIndependantVariables = V.fromList independantVariables
-  , tabAuxiliaryData = fmap (id *** V.fromList) auxiliaryData
+  , tabAuxiliaryData = fmap (second V.fromList) auxiliaryData
 }
 
 
@@ -77,15 +77,15 @@ instance Show Tableau where
   , tabIndependantVariables = independantVariables
   , tabAuxiliaryData = auxiliaryData
   } =
-      let t1 = fmap sr0 (M.colVector b) M.<|> foldl (\a colNo → M.mapCol (addVar colNo) colNo a) (fmap sr a) [1..n]
+      let t1 = fmap sr0 (M.colVector b) M.<|> foldl (\acc colNo → M.mapCol (addVar colNo) colNo acc) (fmap sr a) [1..n]
           z' = fmap sr0 (M.fromLists [[z]])
-          t2 = z' M.<|> foldl (\a colNo → M.mapCol (addVar colNo) colNo a) (fmap sr (M.rowVector c)) [1..n]
+          t2 = z' M.<|> foldl (\acc colNo → M.mapCol (addVar colNo) colNo acc) (fmap sr (M.rowVector c)) [1..n]
           t3 = t1 M.<-> t2
           t4 = M.colVector (V.generate m (\k → "x" ⧺ show (basicVariables V.! k))) M.<-> M.rowVector (V.singleton "z")
-          t5 = fmap (\x → x ⧺ " = ") t4 M.<|> t3
+          t5 = fmap (⧺ " = ") t4 M.<|> t3
           auxiliaryDataRow = case auxiliaryData of
             Nothing           → M.fromList 0 (n+2) []
-            Just (auxZ, auxC) → M.fromLists [["aux Z = ", sr0 auxZ] ⧺ (V.toList ∘ M.getRow 1) (foldl (\a colNo → M.mapCol (addVar colNo) colNo a) (fmap sr0 (M.rowVector auxC)) [1..n])]
+            Just (auxZ, auxC) → M.fromLists [["aux Z = ", sr0 auxZ] ⧺ (V.toList ∘ M.getRow 1) (foldl (\acc colNo → M.mapCol (addVar colNo) colNo acc) (fmap sr0 (M.rowVector auxC)) [1..n])]
           t6 = t5 M.<-> auxiliaryDataRow
       in "\n" ⧺ filter (≠ '"') (show t6)
 
@@ -113,7 +113,7 @@ instance Show Tableau where
 
 
 pivot ∷ Tableau → Variable → Variable → Tableau
-pivot t@(Tableau {
+pivot Tableau {
     tabM = m
   , tabN = n
   , tabA = a
@@ -123,7 +123,7 @@ pivot t@(Tableau {
   , tabBasicVariables = basicVariables
   , tabIndependantVariables = independantVariables
   , tabAuxiliaryData = auxiliaryData
-  }) entering leaving =
+  } entering leaving =
       let Just i = V.elemIndex entering independantVariables
           Just j = V.elemIndex leaving basicVariables
 
@@ -138,10 +138,10 @@ pivot t@(Tableau {
           rows_range = [0..j-1] ⧺ [j+1..m-1]
 
           aFinal = Prelude.foldl f a'' rows_range
-          f m k =
+          f acc k =
             let aki = a M.! (k+1, i+1)
-                m' = M.combineRows (k+1) aki (j+1) m
-            in M.setElem (m' M.! (k+1, i+1) - aki) (k+1, i+1) m'
+                acc' = M.combineRows (k+1) aki (j+1) acc
+            in M.setElem (acc' M.! (k+1, i+1) - aki) (k+1, i+1) acc'
 
 
           bReplacements = Prelude.foldl g [] rows_range
@@ -208,9 +208,9 @@ chooseLeavingVariable Tableau {
 } entering =
   let Just enteringIndex = V.elemIndex entering vi
       aCol = M.getCol (enteringIndex + 1) a
-      coefficients = V.zipWith3 (\i a b →
-        if a < 0
-        then Just (i, -b ÷ a)
+      coefficients = V.zipWith3 (\j aji bj →
+        if aji < 0
+        then Just (j, -bj ÷ aji)
         else Nothing) vb aCol b
       finiteCoefficients = V.map fromJust ∘ V.filter isJust $ coefficients
       (minimalVariable, minimalCoefficient) = V.minimumBy (compare `on` snd) finiteCoefficients
@@ -236,7 +236,7 @@ getMinimalNegativeCoefficientVariable Tableau {
 
 
 generateAuxiliaryTableau ∷ Tableau → Tableau
-generateAuxiliaryTableau t@(Tableau {
+generateAuxiliaryTableau Tableau {
     tabM = m
   , tabN = n
   , tabA = a
@@ -245,7 +245,7 @@ generateAuxiliaryTableau t@(Tableau {
   , tabZ = z
   , tabBasicVariables = basicVariables
   , tabIndependantVariables = independantVariables
-  }) =
+  } =
     let x0Col = V.replicate m 1
         a' = M.colVector x0Col M.<|> a
         c' = V.replicate (n+1) 0 V.// [(0, -1)]
@@ -264,7 +264,8 @@ generateAuxiliaryTableau t@(Tableau {
 
 
 toOriginalTableau ∷ Tableau → Maybe Tableau
-toOriginalTableau tableau@(Tableau {
+toOriginalTableau tableau@(Tableau {tabAuxiliaryData = Nothing}) = Just tableau
+toOriginalTableau Tableau {
     tabM = m
   , tabN = n
   , tabA = a
@@ -272,13 +273,13 @@ toOriginalTableau tableau@(Tableau {
   , tabBasicVariables = basicVariables
   , tabIndependantVariables = independantVariables
   , tabAuxiliaryData = Just (z, c)
-  }) = do
+  } = do
     i0 ← V.elemIndex 0 independantVariables
     let a' = M.submatrix 1 m 1 i0 a M.<|> M.submatrix 1 m (i0 + 2) n a
         c' = V.take i0 c V.++ V.drop (i0 + 1) c
         independantVariables' =
           V.take i0 independantVariables V.++ V.drop (i0 + 1) independantVariables
-    Just (Tableau {
+    Just Tableau {
       tabM = m
     , tabN = n - 1
     , tabA = a'
@@ -288,4 +289,4 @@ toOriginalTableau tableau@(Tableau {
     , tabBasicVariables = basicVariables
     , tabIndependantVariables = independantVariables'
     , tabAuxiliaryData = Nothing
-  })
+  }

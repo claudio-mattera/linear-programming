@@ -2,8 +2,6 @@
 
 module TestsVariables (tests) where
 
-import Prelude.Unicode
-
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -12,7 +10,7 @@ import Data.Ratio
 import LinearProgramming.Tableau
 
 tests ∷ TestTree
-tests = testGroup "Entering and leaving variables choice" $
+tests = testGroup "Entering and leaving variables choice"
         [ testGroup "Examples from Linear and Integer Programming course" $
             Prelude.map makeTestsFromSample samples
         ]

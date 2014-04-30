@@ -2,16 +2,13 @@
 
 module LinearProgramming.Simplex (
     Error(..)
-  , Log(..)
+  , Log
   , LogEntry(..)
   , runSimplex
   ) where
 
 import Prelude.Unicode
 
-import Data.Function (on)
-
-import Control.Monad.Trans (lift)
 import Control.Monad.Writer
 import Control.Monad.Trans.Either
 

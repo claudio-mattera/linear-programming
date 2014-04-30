@@ -2,19 +2,11 @@
 
 module TestsSimplex (tests) where
 
-import Prelude.Unicode
-
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Data.Ratio
-
 import LinearProgramming.Tableau
 import LinearProgramming.Simplex
-
-isRight ∷ Either a b → Bool
-isRight (Right _) = True
-isRight (Left _) = False
 
 tests ∷ TestTree
 tests = testGroup "Simplex"

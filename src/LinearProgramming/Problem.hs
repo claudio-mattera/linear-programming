@@ -44,26 +44,22 @@
 -}
 
 module LinearProgramming.Problem (
-    Problem(..)
-  , CanonicalProblem(..)
+    Problem
+  , CanonicalProblem
   , ObjFuncType(..)
   , Relation(..)
-  , Constraint(..)
-  , CanonicalConstraint(..)
-  , Coefficient(..)
+  , Constraint
+  , CanonicalConstraint
+  , Coefficient
   , computeTableau
   , makeCanonical
   ) where
 
 import Prelude.Unicode
 
-import qualified Data.Matrix as M
-import qualified Data.Vector as V
+import Data.Maybe (fromMaybe)
 
-import Control.Arrow ((***))
-
-import Data.Ratio
-import Data.List (maximumBy)
+import Control.Arrow (second)
 
 import LinearProgramming.Tableau
 
@@ -106,12 +102,13 @@ instance Read Relation where
     "=" → [(Equal, "")]
     ">=" → [(GreaterEqual, "")]
     "≥" → [(GreaterEqual, "")]
+    _ → []
 
 
 -- | Converts a 'Problem' to its canonical form.
 makeCanonical ∷ Problem → CanonicalProblem
 makeCanonical (objType, obj, constraints) =
-  let (objType', obj') =
+  let (_, obj') =
         if objType ≡ Minimize
         then (Maximize, negateCoefficients obj)
         else (objType, obj)
@@ -126,18 +123,18 @@ makeCanonical (objType, obj, constraints) =
   -- Converts equality constraints in double inequality constraints
   -- x ≡ b   ⇒   x ≤ b ∧ x ≥ b
   convertEqualityConstraint ∷ [Constraint] → Constraint → [Constraint]
-  convertEqualityConstraint constraints (as, Equal, b) =
-    (as, LesserEqual, b) : (as, GreaterEqual, b) : constraints
-  convertEqualityConstraint constraints c = c : constraints
+  convertEqualityConstraint cs (as, Equal, b) =
+    (as, LesserEqual, b) : (as, GreaterEqual, b) : cs
+  convertEqualityConstraint cs c = c : cs
 
   -- Converts greater inequality constraints in negated lesser inequality
   -- constraints
   -- x ≥ b   ⇒   -x ≤ -b
   convertGreaterConstraint ∷ [Constraint] → Constraint → [Constraint]
-  convertGreaterConstraint constraints (as, GreaterEqual, b) =
+  convertGreaterConstraint cs (as, GreaterEqual, b) =
     let as' = negateCoefficients as
-    in (as', LesserEqual, -b) : constraints
-  convertGreaterConstraint constraints c = c : constraints
+    in (as', LesserEqual, -b) : cs
+  convertGreaterConstraint cs c = c : cs
 
   toCanonical ∷ Constraint → CanonicalConstraint
   toCanonical (as, _, b) = (as, b)
@@ -169,12 +166,9 @@ computeTableau (obj, constraints) =
   where
 
   safeGet ∷ b → [(Int, b)] → Int → b
-  safeGet def v i =
-    case lookup (i+1) v of
-      Just r  → r
-      Nothing → def
+  safeGet def v i = fromMaybe def (lookup (i+1) v)
 
 
 negateCoefficients ∷ [Coefficient] → [Coefficient]
-negateCoefficients = map (id *** (⋅(-1)))
+negateCoefficients = map (second (⋅(-1)))
 

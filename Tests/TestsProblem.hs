@@ -2,13 +2,10 @@
 
 module TestsProblem (tests) where
 
-import Prelude.Unicode
-
 import Test.Tasty
 import Test.Tasty.HUnit
 
 import LinearProgramming.Problem
-import LinearProgramming.Tableau
 
 tests ∷ TestTree
 tests = testGroup "Problem"
@@ -16,6 +13,7 @@ tests = testGroup "Problem"
           , testLectures
           ]
 
+canonicalIdempotent ∷ TestTree
 canonicalIdempotent =
   testCase "Canonical is idempotent" $
     let problem =
@@ -37,6 +35,7 @@ canonicalIdempotent =
       canonical @?= canonicalExpected
 
 
+testLectures ∷ TestTree
 testLectures =
   testGroup "Examples from Linear and Integer Programming course" $
     [ testCase "Lecture \"Standard Form LP Formulation\"" $

@@ -7,12 +7,14 @@ import LinearProgramming.Simplex
 import LinearProgramming.Parser
 
 import Data.List (sort)
+import Data.Maybe (fromMaybe)
 import Control.Monad (forM_)
 import System.Environment (getArgs)
 
 import qualified Data.DList as DL
 import qualified Data.Vector as V
 
+main ∷ IO ()
 main = do
   args ← getArgs
   case args of
@@ -21,8 +23,7 @@ main = do
     text ← readFile fileName
 
     case parseDirectTableau text of
-      Left e → do
-        print e
+      Left e → print e
       Right tableau → do
         let actualVariables = sort ∘  V.toList ∘ tabIndependantVariables $ tableau
         print tableau
@@ -38,11 +39,8 @@ main = do
             print tf
 
             let vb = V.toList (tabBasicVariables tf)
-                vi = V.toList (tabIndependantVariables tf)
                 b = V.toList (tabB tf)
                 basicVariablesValues = zip vb b
-                --independantVariablesValues = zip vi (repeat 0)
-                --allVariableValues = basicVariablesValues ⧺ independantVariablesValues
                 variables = map (\i → (i,fromRational ∘ lookupDef 0 basicVariablesValues $ i)) actualVariables
 
             putStrLn "Optimal solution:"
@@ -59,7 +57,6 @@ main = do
   isLogTableau _ = False
 
   fromLogTableau (LogTableau t) = t
+  fromLogTableau _ = error "Not a tableau"
 
-  lookupDef d xs e = case lookup e xs of
-    Nothing → d
-    Just x  → x
+  lookupDef def xs e = fromMaybe def (lookup e xs)

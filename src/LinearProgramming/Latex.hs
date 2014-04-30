@@ -43,13 +43,11 @@ toLatex Tableau {
   , tabB = b
   , tabC = c
   , tabZ = z
-  , tabBasicVariables = basicVariables
-  , tabIndependantVariables = independantVariables
   } =
     let rowsIndices = [0..m-1]
         rows = Prelude.map writeLine rowsIndices
         last_row = showRational z ⧺ " & " ⧺
-          V.foldl1 (\a x → a ⧺ " & " ⧺ x) (V.map showRational c)
+          V.foldl1 (\acc x → acc ⧺ " & " ⧺ x) (V.map showRational c)
     in  "\\begin{tabular}{c|" ⧺ Prelude.replicate n 'c' ⧺ "}\n" ⧺
         Prelude.concat rows ⧺
         "\\hline\n" ⧺
@@ -57,7 +55,7 @@ toLatex Tableau {
         "\\end{tabular}"
   where
     writeLine i =
-      let f a x = a ⧺ " & " ⧺ x
+      let f acc x = acc ⧺ " & " ⧺ x
           bi = b V.! i
           asn = M.getRow (i+1) a
           as = V.foldl1 f (V.map showRational asn)

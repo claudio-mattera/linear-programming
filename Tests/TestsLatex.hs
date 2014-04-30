@@ -8,10 +8,7 @@ import Test.Tasty
 import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit
 
-import Test.QuickCheck
-
 import Data.Ratio
-import Data.Foldable
 
 import LinearProgramming.Tableau
 import LinearProgramming.Latex
@@ -22,7 +19,7 @@ tests = testGroup "Latex"
           , testToLatex
           ]
 
-
+testShowRational ∷ TestTree
 testShowRational =
   testGroup "Rational to Latex" $
     [ QC.testProperty "Whole number" $
@@ -47,6 +44,7 @@ testShowRational =
           in (denominator r ≠ 1) ==> (text == textExpected)
     ]
 
+testToLatex ∷ TestTree
 testToLatex =
   testCase "Tableau to Latex" $
     let tableau = makeTableau

@@ -16,6 +16,7 @@ isRight (Left _) = False
 
 fromLeft ∷ Either a b → a
 fromLeft (Left x) = x
+fromLeft _ = error "Not Left"
 
 tests ∷ TestTree
 tests = testGroup "Parser"
@@ -31,6 +32,8 @@ tests = testGroup "Parser"
           , newlinesBetweenConstraints
           ]
 
+
+simpleMax ∷ TestTree
 simpleMax =
   testCase "Simple maximization" $
     let text = "max x1 + x2\n" ⧺
@@ -50,6 +53,8 @@ simpleMax =
       isRight result @? ("Parsing failed: " ⧺ (show ∘ fromLeft $ result))
       tableau @?= problemExpected
 
+
+simpleMin ∷ TestTree
 simpleMin =
   testCase "Simple minimization" $
     let text = "min x1 + x2\n" ⧺
@@ -69,6 +74,8 @@ simpleMin =
       isRight result @? ("Parsing failed: " ⧺ (show ∘ fromLeft $ result))
       tableau @?= problemExpected
 
+
+greaterThanOneCoefficients ∷ TestTree
 greaterThanOneCoefficients =
   testCase "Greater than one coefficients" $
     let text = "max x1 + 3*x2\n" ⧺
@@ -88,6 +95,8 @@ greaterThanOneCoefficients =
       isRight result @? ("Parsing failed: " ⧺ (show ∘ fromLeft $ result))
       tableau @?= problemExpected
 
+
+greaterThanOneCoefficientsWithoutMul ∷ TestTree
 greaterThanOneCoefficientsWithoutMul =
   testCase "Greater than one coefficients (no * symbol)" $
     let text = "max x1 + 3 x2\n" ⧺
@@ -107,6 +116,8 @@ greaterThanOneCoefficientsWithoutMul =
       isRight result @? ("Parsing failed: " ⧺ (show ∘ fromLeft $ result))
       tableau @?= problemExpected
 
+
+minimizationWithInequalities ∷ TestTree
 minimizationWithInequalities =
   testCase "Minimization with inequalities" $
     let text = "min x1 + 3 x2\n" ⧺
@@ -128,6 +139,8 @@ minimizationWithInequalities =
       isRight result @? ("Parsing failed: " ⧺ (show ∘ fromLeft $ result))
       tableau @?= problemExpected
 
+
+negativeCoefficients ∷ TestTree
 negativeCoefficients =
   testCase "Negative coefficients" $
     let text = "min -1 x1 + 3 x2\n" ⧺
@@ -149,6 +162,8 @@ negativeCoefficients =
       isRight result @? ("Parsing failed: " ⧺ (show ∘ fromLeft $ result))
       tableau @?= problemExpected
 
+
+newlinesBeforeObjective ∷ TestTree
 newlinesBeforeObjective =
   testCase "Newlines before objective function" $
     let text = "\n" ⧺
@@ -174,6 +189,8 @@ newlinesBeforeObjective =
       isRight result @? ("Parsing failed: " ⧺ (show ∘ fromLeft $ result))
       tableau @?= problemExpected
 
+
+newlinesAfterObjective ∷ TestTree
 newlinesAfterObjective =
   testCase "Newlines after objective function" $
     let text = "min -1 x1 + 3 x2\n" ⧺
@@ -197,6 +214,8 @@ newlinesAfterObjective =
       isRight result @? ("Parsing failed: " ⧺ (show ∘ fromLeft $ result))
       tableau @?= problemExpected
 
+
+newlinesBeforeEof ∷ TestTree
 newlinesBeforeEof =
   testCase "Newlines before end of file" $
     let text = "min -1 x1 + 3 x2\n" ⧺
@@ -220,6 +239,8 @@ newlinesBeforeEof =
       isRight result @? ("Parsing failed: " ⧺ (show ∘ fromLeft $ result))
       tableau @?= problemExpected
 
+
+newlinesBetweenConstraints ∷ TestTree
 newlinesBetweenConstraints =
   testCase "Newlines between constraints" $
     let text = "min -1 x1 + 3 x2\n" ⧺
