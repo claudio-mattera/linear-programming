@@ -25,7 +25,7 @@ main = do
     case parseDirectTableau text of
       Left e → print e
       Right tableau → do
-        let actualVariables = sort ∘  V.toList ∘ tabIndependantVariables $ tableau
+        let actualVariables = sort ∘ V.toList ∘ tabIndependantVariables $ tableau
         print tableau
         let (result, history) = runSimplex tableau
             values = map (fromRational ∘ tabZ ∘ fromLogTableau) ∘

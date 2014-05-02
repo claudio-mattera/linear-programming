@@ -163,4 +163,3 @@ computeTableau (obj, constraints) =
 
 negateCoefficients ∷ [Coefficient] → [Coefficient]
 negateCoefficients = map (second (⋅(-1)))
-

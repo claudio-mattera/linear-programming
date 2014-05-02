@@ -130,11 +130,14 @@ rational = do
   _ ← char '.'
   ds2 ← many1 digit
   let ts = takeWhile (≠ '0') ds2
-      k = fromIntegral (length ts)
+      k = fromIntegral (length ts) ∷ Integer
       den = 10 ^^ k ∷ Rational
       ds = dropWhile (≡ '0') ds1 ⧺ ts
-      num = read ds ∷ Rational
-  return (coefficient ⋅ num / den)
+      num = fromIntegral (read ds ∷ Integer)
+  return (if null ds
+          then 0
+          else coefficient ⋅ num / den
+          )
 
 matrixOfNumbers ∷ Int → Parsec String () [[Rational]]
 matrixOfNumbers m = count m (listOfNumbers <* newline)
