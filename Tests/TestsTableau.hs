@@ -20,7 +20,8 @@ tests ∷ TestTree
 tests = testGroup "Tableau" $
         [ testGroup "Examples from Linear and Integer Programming course" $
             map makeTestsFromSample samples
-        ,  qcProps
+        , qcProps
+        , testsInstances
         ]
 
 qcProps ∷ TestTree
@@ -314,3 +315,173 @@ instance Arbitrary FeasibleTableau where
     return (FeasibleTableau tableau {
       tabB = b'
     })
+
+
+
+testsInstances ∷ TestTree
+testsInstances = testGroup "Instances" [
+                      showIntegerNonOneCoefficients
+                    , showIntegerOneCoefficients
+                    , showIntegerZeroCoefficients
+                    , showRationalCoefficients
+                    , showAuxiliaryData
+                    ]
+
+  where
+
+  removeParsAndSpaces ∷ String → String
+  removeParsAndSpaces (' ' : ' ' : ys) = removeParsAndSpaces (' ' : ys)
+  removeParsAndSpaces ('(' : ys) = removeParsAndSpaces ys
+  removeParsAndSpaces (')' : ys) = removeParsAndSpaces ys
+  removeParsAndSpaces (' ' : []) = []
+  removeParsAndSpaces (x:ys) = x : removeParsAndSpaces ys
+  removeParsAndSpaces [] = []
+
+  trim ∷ String → String
+  trim xs = helper $ dropWhile (≡ ' ') xs
+    where
+    helper = reverse ∘ dropWhile (≡ ' ') ∘ reverse
+
+  purge ∷ String → String
+  purge = unlines ∘ filter (not ∘ null) ∘ map (trim ∘ removeParsAndSpaces) ∘ lines
+
+  showIntegerNonOneCoefficients = testCase "Show integer non 1 coefficients" $
+    let tableau = makeTableau
+          2
+          4
+          [ [ 3, -2]
+          , [ 7, -2]
+          , [-2,  2]
+          , [-2,  8]
+          ]
+          [2, 11, 3, 6]
+          [5, 2]
+          0
+          [3,4,5,6]
+          [1,2]
+
+        sExpected = "x3 =  2  3 x1  -2 x2\n" ⧺
+                    "x4 = 11  7 x1  -2 x2\n" ⧺
+                    "x5 =  3 -2 x1   2 x2\n" ⧺
+                    "x6 =  6 -2 x1   8 x2\n" ⧺
+                    "z  =  0  5 x1   2 x2"
+        s = show tableau
+
+        sExpected' = purge sExpected
+        s' = purge s
+
+    in s' @?= sExpected'
+
+
+  showIntegerOneCoefficients = testCase "Show integer 1 coefficients" $
+    let tableau = makeTableau
+          2
+          4
+          [ [ 3, -1]
+          , [ 7, -1]
+          , [-2,  1]
+          , [-2,  8]
+          ]
+          [2, 11, 3, 6]
+          [1, 2]
+          0
+          [3,4,5,6]
+          [1,2]
+
+        sExpected = "x3 =  2  3 x1    -x2\n" ⧺
+                    "x4 = 11  7 x1    -x2\n" ⧺
+                    "x5 =  3 -2 x1     x2\n" ⧺
+                    "x6 =  6 -2 x1   8 x2\n" ⧺
+                    "z  =  0    x1   2 x2"
+        s = show tableau
+
+        sExpected' = purge sExpected
+        s' = purge s
+
+    in s' @?= sExpected'
+
+
+  showIntegerZeroCoefficients = testCase "Show integer 0 coefficients" $
+    let tableau = makeTableau
+          2
+          4
+          [ [ 3, -1]
+          , [ 0, -1]
+          , [-2,  1]
+          , [-2,  0]
+          ]
+          [2, 11, 0, 6]
+          [1, 0]
+          0
+          [3,4,5,6]
+          [1,2]
+
+        sExpected = "x3 =  2  3 x1    -x2\n" ⧺
+                    "x4 = 11          -x2\n" ⧺
+                    "x5 =  0 -2 x1     x2\n" ⧺
+                    "x6 =  6 -2 x1\n" ⧺
+                    "z  =  0    x1"
+        s = show tableau
+
+        sExpected' = purge sExpected
+        s' = purge s
+
+    in s' @?= sExpected'
+
+
+  showRationalCoefficients = testCase "Show rational coefficients" $
+    let tableau = makeTableau
+          2
+          4
+          [ [ 3%4, -1]
+          , [ 0, -1/12]
+          , [-2,  1]
+          , [-2/5,  0]
+          ]
+          [2, 11/9, 0, 6]
+          [1, 0]
+          0
+          [3,4,5,6]
+          [1,2]
+
+        sExpected = "x3 =  2    3/4 x1       -x2\n" ⧺
+                    "x4 = 11/9          -1/12 x2\n" ⧺
+                    "x5 =  0   -2   x1        x2\n" ⧺
+                    "x6 =  6   -2/5 x1\n" ⧺
+                    "z  =  0        x1"
+        s = show tableau
+
+        sExpected' = purge sExpected
+        s' = purge s
+
+    in s' @?= sExpected'
+
+
+  showAuxiliaryData = testCase "Show auxiliary data" $
+    let tableau = makeTableau'
+          2
+          4
+          [ [ 3%4, -1]
+          , [ 0, -1/12]
+          , [-2,  1]
+          , [-2/5,  0]
+          ]
+          [2, 11/9, 0, 6]
+          [1, 0]
+          0
+          [3,4,5,6]
+          [1,2]
+          (Just (4, [1%2, 0]))
+
+        sExpected = "x3    =  2    3/4 x1       -x2\n" ⧺
+                    "x4    = 11/9          -1/12 x2\n" ⧺
+                    "x5    =  0   -2   x1        x2\n" ⧺
+                    "x6    =  6   -2/5 x1\n" ⧺
+                    "z     =  0        x1\n" ⧺
+                    "aux Z =  4    1/2 x1"
+        s = show tableau
+
+        sExpected' = purge sExpected
+        s' = purge s
+
+    in s' @?= sExpected'

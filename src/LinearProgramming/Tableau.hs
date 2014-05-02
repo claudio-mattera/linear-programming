@@ -108,7 +108,9 @@ instance Show Tableau where
       let v = independantVariables V.! (k - 1)
       in if xs ≡ "1"
         then " x" ⧺ show v ⧺ " "
-        else " " ⧺ xs ⧺ " x" ⧺ show v ⧺ " "
+        else if xs ≡ "-1"
+          then " -x" ⧺ show v ⧺ " "
+          else " " ⧺ xs ⧺ " x" ⧺ show v ⧺ " "
 
     showEmptyZero ∷ Value → String
     showEmptyZero r
