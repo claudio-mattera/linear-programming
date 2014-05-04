@@ -13,7 +13,35 @@ tests ∷ TestTree
 tests = testGroup "Entering and leaving variables choice"
         [ testGroup "Examples from Linear and Integer Programming course" $
             Prelude.map makeTestsFromSample samples
+        , initialAuxiliaryPivotTest
         ]
+
+initialAuxiliaryPivotTest ∷ TestTree
+initialAuxiliaryPivotTest =
+  testCase "Initial auxiliary pivot" $
+    let tableau = makeTableau'
+            4
+            4
+            [ [ 1, -1,  1,  0]
+            , [ 1,  0, -1, -1]
+            , [ 1,  1,  0, -1]
+            , [ 1,  0,  0,  1]
+            ]
+            [5,14,-6,-7]
+            [-1,0,0,0]
+            0
+            [4,5,6,7]
+            [0,1,2,3]
+            (Just (0, [0,1,2,-1]))
+
+        -- entering = 0
+        leavingExpected = 7
+
+        leaving = getMinimalNegativeCoefficientVariable tableau
+
+    in leaving @?= leavingExpected
+
+
 
 type Sample = (String, Tableau, Maybe Variable, Maybe Variable)
 
@@ -225,6 +253,56 @@ sample9 =
   in (desc, tableau, entering, leaving)
 
 
+sample10 ∷ Sample
+sample10 =
+  let desc = "Final auxiliary tableau pivot"
+
+      tableau = makeTableau'
+            3
+            4
+            [ [ 1%3, -1%3,  1]
+            , [ 1%3, -2%3, -1]
+            , [ 1%3, -2%3, -2]
+            , [ 0,   -1,   -2]
+            ]
+            [0,2,6,6]
+            [-1%3,-2%3,1]
+            (-2)
+            [1,0,4,6]
+            [3,5,2]
+            (Just (0, [0,1,2]))
+
+      entering = Just 2
+      leaving = Just 0
+
+  in (desc, tableau, entering, leaving)
+
+
+sample11 ∷ Sample
+sample11 =
+  let desc = "Final tableau has no entering variable"
+
+      tableau = makeTableau
+            3
+            4
+            [ [ 1%3, -1%3,  1]
+            , [ 1%3, -2%3, -1]
+            , [ 1%3, -2%3, -2]
+            , [ 0,   -1,   -2]
+            ]
+            [0,2,6,6]
+            [-1%3,-2%3,-1]
+            (-2)
+            [1,0,4,6]
+            [3,5,2]
+
+      entering = Nothing
+      leaving = Nothing
+
+  in (desc, tableau, entering, leaving)
+
+
+
 samples ∷ [Sample]
 samples =
   [ sample1
@@ -236,6 +314,8 @@ samples =
   , sample7
   , sample8
   , sample9
+  , sample10
+  , sample11
   ]
 
 makeTestsFromSample ∷ Sample → TestTree

@@ -105,7 +105,7 @@ variable = read <$> (char 'x' *> many1 digit)
 
 relationSymbol ∷ Parsec String () Relation
 relationSymbol =
-  read <$> (string "=" <|> string "<=" <|> string ">=")
+  read <$> (string "=" <|> string "<=" <|> string ">=" <|> string "≥" <|> string "≤")
 
 whitespace ∷ Parsec String () Char
 whitespace = oneOf " \t"

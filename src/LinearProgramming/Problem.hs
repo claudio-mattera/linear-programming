@@ -108,15 +108,15 @@ instance Read Relation where
 -- | Converts a 'Problem' to its canonical form.
 makeCanonical ∷ Problem → CanonicalProblem
 makeCanonical (objType, obj, constraints) =
-  let (_, obj') =
-        if objType ≡ Minimize
-        then (Maximize, negateCoefficients obj)
-        else (objType, obj)
-
+  let obj' = case objType of
+              Minimize → negateCoefficients obj
+              Maximize → obj
       constraints' = map toCanonical ∘ convertGreaterConstraints ∘
         convertEqualityConstraints $ constraints
   in (obj', constraints')
+
   where
+
   convertEqualityConstraints = foldl convertEqualityConstraint []
   convertGreaterConstraints = foldl convertGreaterConstraint []
 
