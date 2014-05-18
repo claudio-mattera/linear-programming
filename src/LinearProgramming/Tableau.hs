@@ -7,6 +7,9 @@ module LinearProgramming.Tableau (
   , makeTableau
   , makeTableau'
   , pivot
+  , newPivot
+  , matrixToTableau
+  , tableauToMatrix
   , isFeasible
   , isFinal
   , chooseEnteringVariable
@@ -123,7 +126,72 @@ instance Show Tableau where
       | denominator r ≡ 1   = show (numerator r)
       | otherwise           = show (numerator r) ⧺ "/" ⧺ show (denominator r)
 
+matrixToTableau ∷ Int → Int → V.Vector Variable → V.Vector Variable → M.Matrix Value → Tableau
+matrixToTableau n m vb vi mat =
+    let a = M.submatrix 1 m 2 (n+1) mat
+        b = M.submatrix 1 m 1 1 mat
+        c = M.submatrix (m+1) (m+1) 2 (n+1) mat
+        z = M.submatrix (m+1) (m+1) 1 1 mat
+        auxC = M.submatrix (m+2) (m+2) 2 (n+1) mat
+        auxZ = M.submatrix (m+2) (m+2) 1 1 mat
+    in Tableau {
+      tabM = m
+    , tabN = n
+    , tabA = a
+    , tabB = M.getCol 1 b
+    , tabC = M.getRow 1 c
+    , tabZ = z M.! (1,1)
+    , tabBasicVariables = vb
+    , tabIndependantVariables = vi
+    , tabAuxiliaryData = if M.nrows mat > m + 1
+        then Just (auxZ M.! (1,1), (M.getRow 1 auxC))
+        else Nothing
+    }
 
+tableauToMatrix ∷ Tableau → M.Matrix Value
+tableauToMatrix Tableau {
+    tabA = a
+  , tabB = b
+  , tabC = c
+  , tabZ = z
+  , tabAuxiliaryData = auxiliaryData
+  } =
+    case auxiliaryData of
+      Nothing → (M.colVector b M.<|> a) M.<-> M.rowVector (z `V.cons` c)
+      Just (auxZ, auxC) → (M.colVector b M.<|> a) M.<-> M.rowVector (z `V.cons` c) M.<-> M.rowVector (auxZ `V.cons` auxC)
+
+
+newPivot ∷ Tableau → Variable → Variable → Tableau
+newPivot tableau@(Tableau {
+    tabM = m
+  , tabN = n
+  , tabBasicVariables = basicVariables
+  , tabIndependantVariables = independantVariables
+  , tabAuxiliaryData = auxiliaryData
+  }) entering leaving =
+      let mat = tableauToMatrix tableau
+
+          Just i = V.elemIndex entering independantVariables >>= (return ∘ (+2))
+          Just j = V.elemIndex leaving basicVariables >>= (return ∘ (+1))
+
+          aji = mat M.! (j, i)
+
+          mat' = M.mapCol (\k _ → if k ≡ j then -1 else 0) i mat
+
+          mat'' = M.scaleRow (-1 ÷ aji) j mat'
+
+          rowsRange = case auxiliaryData of
+            Nothing → [1..j-1] ⧺ [j+1..m+1]
+            Just _ → [1..j-1] ⧺ [j+1..m+2]
+          mat''' = foldl f mat'' rowsRange
+
+          f acc k =
+            let aik = mat M.! (k, i)
+            in M.combineRows k aik j acc
+
+          newBasicVariables = basicVariables V.// [((j-1), entering)]
+          newIndependantVariables = independantVariables V.// [((i-2), leaving)]
+      in matrixToTableau n m newBasicVariables newIndependantVariables mat'''
 
 pivot ∷ Tableau → Variable → Variable → Tableau
 pivot Tableau {
@@ -280,7 +348,7 @@ generateAuxiliaryTableau Tableau {
 
 
 toOriginalTableau ∷ Tableau → Maybe Tableau
-toOriginalTableau tableau@(Tableau {tabAuxiliaryData = Nothing}) =
+toOriginalTableau Tableau {tabAuxiliaryData = Nothing} =
   error "Not an auxiliary tableau"
 toOriginalTableau Tableau {
     tabM = m

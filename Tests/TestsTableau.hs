@@ -22,6 +22,7 @@ tests = testGroup "Tableau" $
             map makeTestsFromSample samples
         , qcProps
         , testsInstances
+        , testsNewPivot
         ]
 
 qcProps ∷ TestTree
@@ -283,7 +284,15 @@ arbitraryTableau size = do
     bs ← vector m
     cs ← vector n
     z ← arbitrary
-    let t = makeTableau
+    hasAux ← arbitrary
+    aux ←
+      if hasAux
+      then do
+        auxCs ← vector n
+        auxZ ← arbitrary
+        return (Just (auxZ, auxCs))
+      else return Nothing
+    let t = makeTableau'
               n
               m
               ass
@@ -292,6 +301,7 @@ arbitraryTableau size = do
               z
               [n+1 .. n+m]
               [1..n]
+              aux
     return t
 
   where
@@ -485,3 +495,263 @@ testsInstances = testGroup "Instances" [
         s' = purge s
 
     in s' @?= sExpected'
+
+
+
+testsNewPivot ∷ TestTree
+testsNewPivot =
+  testGroup "New pivot" [
+      testMatrixToTableau1
+    , testMatrixToTableau2
+    , testMatrixToTableauAux
+    , testTableauToMatrix1
+    , testTableauToMatrix2
+    , testTableauAuxToMatrix
+    , testNewPivot
+    , testNewPivotAux
+
+    , QC.testProperty "Pivot and newPivot are equivalent" $
+      \tableau →
+        let resultOld = performSimplexIteration pivot tableau
+            resultNew = performSimplexIteration pivot tableau
+        in resultNew ≡ resultOld
+    ]
+
+  where
+
+  performSimplexIteration ∷ (Tableau → Variable → Variable → Tableau) → Tableau → Maybe Tableau
+  performSimplexIteration func tableau = do
+    entering ← chooseEnteringVariable tableau
+    leaving ← chooseLeavingVariable tableau entering
+    return (func tableau entering leaving)
+
+  testMatrixToTableau1 = testCase "Matrix to tableau (1)" $
+    let mat = M.fromLists [ [ 2,  3, -2]
+                          , [11,  7, -2]
+                          , [ 3, -2,  2]
+                          , [ 6, -2,  8]
+                          , [ 0,  5,  2]
+                          ]
+        n = 2
+        m = 4
+        vb = V.fromList [3,4,5,6]
+        vi = V.fromList [1,2]
+
+        tExpected = makeTableau
+          2
+          4
+          [ [ 3, -2]
+          , [ 7, -2]
+          , [-2,  2]
+          , [-2,  8]
+          ]
+          [2, 11, 3, 6]
+          [5, 2]
+          0
+          [3,4,5,6]
+          [1,2]
+
+        t = matrixToTableau n m vb vi mat
+
+    in t @?= tExpected
+
+
+  testMatrixToTableau2 = testCase "Matrix to tableau (2)" $
+    let mat = M.fromLists [ [12,  1, -1,  1, -1]
+                          , [21,  1,  0, -1, -2]
+                          , [ 1,  1,  1,  0, -2]
+                          , [ 7,  1,  0,  0, -1]
+                          , [-7, -1,  0,  0,  1]
+                          ]
+        n = 4
+        m = 4
+        vb = V.fromList [4,5,6,0]
+        vi = V.fromList [7,1,2,3]
+
+        tExpected = makeTableau
+          4
+          4
+          [ [ 1, -1,  1, -1]
+          , [ 1,  0, -1, -2]
+          , [ 1,  1,  0, -2]
+          , [ 1,  0,  0, -1]
+          ]
+          [12, 21, 1, 7]
+          [-1, 0, 0, 1]
+          (-7)
+          [4,5,6,0]
+          [7,1,2,3]
+
+        t = matrixToTableau n m vb vi mat
+
+    in t @?= tExpected
+
+  testMatrixToTableauAux = testCase "Matrix to tableau (auxiliary data)" $
+    let mat = M.fromLists [ [ 5,  1, -1,  1,  0]
+                          , [14,  1,  0, -1, -1]
+                          , [-6,  1,  1,  0, -1]
+                          , [-7,  1,  0,  0, -1]
+                          , [ 0, -1,  0,  0,  0]
+                          , [ 0,  0,  1,  2, -1]
+                          ]
+        n = 4
+        m = 4
+        vb = V.fromList [4,5,6,7]
+        vi = V.fromList [0,1,2,3]
+
+        tExpected = makeTableau'
+            4
+            4
+            [ [ 1, -1,  1,  0]
+            , [ 1,  0, -1, -1]
+            , [ 1,  1,  0, -1]
+            , [ 1,  0,  0, -1]
+            ]
+            [5,14,-6,-7]
+            [-1,0,0,0]
+            0
+            [4,5,6,7]
+            [0,1,2,3]
+            (Just (0, [0,1,2,-1]))
+
+        t = matrixToTableau n m vb vi mat
+
+    in t @?= tExpected
+
+  testTableauToMatrix1  = testCase "Tableau to matrix (1)" $
+    let matExpected =
+          M.fromLists [ [ 2,  3, -2]
+                      , [11,  7, -2]
+                      , [ 3, -2,  2]
+                      , [ 6, -2,  8]
+                      , [ 0,  5,  2]
+                      ]
+
+        tableau = makeTableau
+          2
+          4
+          [ [ 3, -2]
+          , [ 7, -2]
+          , [-2,  2]
+          , [-2,  8]
+          ]
+          [2, 11, 3, 6]
+          [5, 2]
+          0
+          [3,4,5,6]
+          [1,2]
+
+        mat = tableauToMatrix tableau
+
+    in mat @?= matExpected
+
+
+  testTableauToMatrix2 = testCase "Tableau to matrix (2)" $
+    let matExpected =
+          M.fromLists [ [12,  1, -1,  1, -1]
+                      , [21,  1,  0, -1, -2]
+                      , [ 1,  1,  1,  0, -2]
+                      , [ 7,  1,  0,  0, -1]
+                      , [-7, -1,  0,  0,  1]
+                      ]
+
+        tableau = makeTableau
+          4
+          4
+          [ [ 1, -1,  1, -1]
+          , [ 1,  0, -1, -2]
+          , [ 1,  1,  0, -2]
+          , [ 1,  0,  0, -1]
+          ]
+          [12, 21, 1, 7]
+          [-1, 0, 0, 1]
+          (-7)
+          [4,5,6,0]
+          [7,1,2,3]
+
+        mat = tableauToMatrix tableau
+
+    in mat @?= matExpected
+
+  testTableauAuxToMatrix = testCase "Tableau to matrix (auxiliary data)" $
+    let matExpected =
+          M.fromLists [ [ 5,  1, -1,  1,  0]
+                      , [14,  1,  0, -1, -1]
+                      , [-6,  1,  1,  0, -1]
+                      , [-7,  1,  0,  0, -1]
+                      , [ 0, -1,  0,  0,  0]
+                      , [ 0,  0,  1,  2, -1]
+                      ]
+
+        tableau = makeTableau'
+            4
+            4
+            [ [ 1, -1,  1,  0]
+            , [ 1,  0, -1, -1]
+            , [ 1,  1,  0, -1]
+            , [ 1,  0,  0, -1]
+            ]
+            [5,14,-6,-7]
+            [-1,0,0,0]
+            0
+            [4,5,6,7]
+            [0,1,2,3]
+            (Just (0, [0,1,2,-1]))
+
+        mat = tableauToMatrix tableau
+
+    in mat @?= matExpected
+
+
+
+  testNewPivot = testCase "New pivot" $
+    let tInitial = makeTableau
+            3
+            4
+            [ [-1,  1,  0]
+            , [ 1,  0, -1]
+            , [ 2,  0, -1]
+            , [ 1, -1,  0]
+            ]
+            [5,6,2,4]
+            [2,3,-5]
+            0
+            [4,5,6,7]
+            [1,2,3]
+
+        entering = 2
+        leaving = 7
+
+        tExpected = pivot tInitial entering leaving
+
+        t = newPivot tInitial entering leaving
+
+    in t @?= tExpected
+
+
+
+  testNewPivotAux = testCase "New pivot with auxiliary data" $
+    let tInitial = makeTableau'
+            3
+            4
+            [ [ 1,  2, -1]
+            , [ 1,  0, -1]
+            , [ 1, -1,  2]
+            , [ 1, -1,  0]
+            ]
+            [-2,4,-2,4]
+            [-1,0,0]
+            0
+            [3,4,5,6]
+            [0,1,2]
+            (Just (0, [0,1,2]))
+
+        entering = 0
+        leaving = 3
+
+        tExpected = pivot tInitial entering leaving
+
+        t = newPivot tInitial entering leaving
+
+    in t @?= tExpected
+
