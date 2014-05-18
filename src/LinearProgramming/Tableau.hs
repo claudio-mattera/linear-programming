@@ -280,7 +280,7 @@ generateAuxiliaryTableau Tableau {
 
 
 toOriginalTableau ∷ Tableau → Maybe Tableau
-toOriginalTableau tableau@(Tableau {tabAuxiliaryData = Nothing}) =
+toOriginalTableau Tableau {tabAuxiliaryData = Nothing} =
   error "Not an auxiliary tableau"
 toOriginalTableau Tableau {
     tabM = m

@@ -19,6 +19,7 @@ library
                     , LinearProgramming.Problem
                     , LinearProgramming.Parser
                     , LinearProgramming.Latex
+                    , LinearProgramming.MathML
   hs-source-dirs:     src
   build-depends:      base == 4.*
                     , base-unicode-symbols
