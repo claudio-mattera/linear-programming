@@ -47,6 +47,7 @@ Test-Suite Tests
     main-is:          Tests.hs
     build-depends:    base == 4.*
                     , base-unicode-symbols
+                    , dlist
                     , matrix
                     , vector
                     , tasty
