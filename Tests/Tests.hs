@@ -10,6 +10,7 @@ import qualified TestsVariables
 import qualified TestsCompleteExample
 import qualified TestsSimplex
 import qualified TestsLatex
+import qualified TestsMathML
 import qualified TestsParser
 import qualified TestsProblem
 
@@ -25,6 +26,7 @@ tests = testGroup "Unit tests"
   , TestsCompleteExample.tests
   , TestsSimplex.tests
   , TestsLatex.tests
+  , TestsMathML.tests
   , TestsParser.tests
   , TestsProblem.tests
   ]
