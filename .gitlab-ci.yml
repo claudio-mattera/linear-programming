@@ -29,6 +29,7 @@ configure:cabal:
   stage: configure
   image: debian:stable
   script:
+    - tree .cabal-sandbox
     - cabal configure --enable-tests
   dependencies:
     - prepare:cabal
