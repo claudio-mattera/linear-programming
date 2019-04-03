@@ -186,7 +186,7 @@ completeExample =
       in t @?= tAux3
 
   testFeasibleTableau =
-    testCase "Computing the feasible tableau for the original problem" $
+    testCase "Computing the feasible tableau for the original problem (skip)" $
       let Just t = toOriginalTableau tAux3
       in t @?= tf
 

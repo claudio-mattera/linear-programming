@@ -115,7 +115,7 @@ infeasibleProblemTest =
 
 feasibleAfterInitializationTest ∷ TestTree
 feasibleAfterInitializationTest =
-  let desc = "Feasible after initialization problem"
+  let desc = "Feasible after initialization problem (skip)"
 
       tInitial = makeTableau
         2

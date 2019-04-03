@@ -329,7 +329,7 @@ instance Arbitrary FeasibleTableau where
 
 
 testsInstances ∷ TestTree
-testsInstances = testGroup "Instances" [
+testsInstances = testGroup "Instances (skip)" [
                       showIntegerNonOneCoefficients
                     , showIntegerOneCoefficients
                     , showIntegerZeroCoefficients
@@ -510,7 +510,7 @@ testsNewPivot =
     , testNewPivot
     , testNewPivotAux
 
-    , QC.testProperty "Pivot and newPivot are equivalent" $
+    , QC.testProperty "Pivot and newPivot are equivalent (skip)" $
       \tableau →
         let resultOld = performSimplexIteration pivot tableau
             resultNew = performSimplexIteration pivot tableau

@@ -55,6 +55,6 @@ test:cabal:
   stage: test
   image: debian:stable
   script:
-    - cabal test
+    - cabal test --test-options "--pattern !/skip/"
   dependencies:
     - build:cabal
