@@ -1,0 +1,59 @@
+stages:
+  - prepare
+  - configure
+  - lint
+  - build
+  - test
+  - documentation
+  - package
+
+
+before_script:
+  - apt-get update
+  - apt-get install -y ghc cabal-install
+
+
+prepare:cabal:
+  stage: prepare
+  image: debian:stable
+  script:
+    - cabal sandbox init
+    - cabal install --only-dependencies --enable-tests
+  artifacts:
+    paths:
+      - '.cabal-sandbox/'
+
+
+configure:cabal:
+  stage: configure
+  image: debian:stable
+  script:
+    - cabal configure --enable-tests
+  dependencies:
+    - prepare:cabal
+  artifacts:
+    paths:
+      - '.cabal-sandbox/'
+      - 'dist/'
+
+
+build:cabal:
+  stage: build
+  image: debian:stable
+  script:
+    - cabal build
+  dependencies:
+    - configure:cabal
+  artifacts:
+    paths:
+      - '.cabal-sandbox/'
+      - 'dist/'
+
+
+test:cabal:
+  stage: test
+  image: debian:stable
+  script:
+    - cabal test
+  dependencies:
+    - build:cabal
