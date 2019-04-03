@@ -1,5 +1,4 @@
 stages:
-  - prepare
   - configure
   - lint
   - build
@@ -14,25 +13,13 @@ before_script:
   - cabal update
 
 
-prepare:cabal:
-  stage: prepare
-  image: debian:stable
-  script:
-    - cabal sandbox init
-    - cabal install --only-dependencies --enable-tests
-  artifacts:
-    paths:
-      - '.cabal-sandbox/'
-
-
 configure:cabal:
   stage: configure
   image: debian:stable
   script:
-    - tree .cabal-sandbox
+    - cabal sandbox init
+    - cabal install --only-dependencies --enable-tests
     - cabal configure --enable-tests
-  dependencies:
-    - prepare:cabal
   artifacts:
     paths:
       - '.cabal-sandbox/'
