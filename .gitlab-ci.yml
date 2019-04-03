@@ -18,6 +18,7 @@ prepare:cabal:
   image: debian:stable
   script:
     - cabal sandbox init
+    - cabal update
     - cabal install --only-dependencies --enable-tests
   artifacts:
     paths:
