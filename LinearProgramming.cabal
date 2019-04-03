@@ -25,7 +25,6 @@ library
                     , base-unicode-symbols
                     , mtl
                     , transformers
-                    , EitherT
                     , dlist
                     , matrix
                     , vector
